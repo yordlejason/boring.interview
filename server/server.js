@@ -43,9 +43,11 @@ app.post('/api/ask', async (req, res) => {
   try {
     const content = pre_prompt + question
     const response = await openai.chat.completions.create({
-      model: "o1-mini",
+      // model: "o1-mini",
+      model: "gpt-3.5-turbo-0125",
       messages: [{ role: "user", content: content }],
-      max_completion_tokens: 10000
+      // max_completion_tokens: 10000
+      max_completion_tokens: 4096
     });
 
     const answer = response.choices[0].message.content.trim();

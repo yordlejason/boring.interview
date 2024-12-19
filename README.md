@@ -1,4 +1,4 @@
-# CodeAssist
+# boring.interview
 
 This application captures your screen, extracts text via OCR, identifies questions, and provides answers.
 
