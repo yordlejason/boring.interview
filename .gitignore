@@ -1,0 +1,40 @@
+# Node modules & lockfiles
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs for frontend (Vite/React)
+dist/
+build/
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor directories and OS-specific files
+.vscode/
+.idea/
+.DS_Store
+
+# Coverage reports
+coverage/
+
+# Temporary files
+*.log
+*.cache
+*.tmp
+
+# If you're using TypeScript build artifacts
+*.tsbuildinfo
+
+# If you have a separate client/ and server/ structure:
+client/node_modules/
+client/dist/
+server/node_modules/
+server/build/
+
+# Ignore lockfiles if you don't want to commit them (optional)
+# package-lock.json
+# yarn.lock
