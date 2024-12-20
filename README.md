@@ -43,7 +43,7 @@ PORT=3000
 
 1.	Clone this repository:
 
-```git clone https://github.com/yourusername/screen-capture-ocr.git```
+```https://github.com/yordlejason/boring.interview.git```
 
 2.	Install Server Dependencies:
 ```bash
