@@ -1,12 +1,35 @@
 # boring.interview
 
-This application captures your screen, extracts text via OCR, identifies questions, and provides answers.
+boring.interview is an innovative tool designed to simplify the process of solving programming-related challenges through seamless integration of OCR (Optical Character Recognition) and AI-powered assistance. Built with a focus on efficiency, accessibility, and modern design, boring.interview empowers developers to extract, analyze, and solve coding problems directly from their screens in real time.
+
+### Key Features:
+- Screen Capture Integration: Effortlessly capture any section of your screen for text recognition, making it ideal for extracting complex coding problems, debugging issues, or understanding code snippets.
+- Powerful OCR Processing: Utilizing state-of-the-art OCR technology, boring.interview transforms raw images into clean, structured text to analyze coding challenges effectively.
+- AI-Powered Solutions: Powered by OpenAI’s advanced language models, the app provides detailed, step-by-step solutions, including explanations, optimized code, and test cases to validate the results.
+- Status Tracking: A clear and intuitive progress tracker allows users to monitor each stage of the process, from screen capture to parsing, AI analysis, and solution delivery.
+- Dark Mode: Enhanced accessibility and user experience with a toggleable dark mode for coding enthusiasts who prefer working in low-light environments.
+
+### How It Works:
+1.	Screen Sharing: Share your screen to capture coding challenges or problems displayed in any application.
+2.	OCR & Text Extraction: The app processes the captured screen to extract relevant text.
+3.	AI-Powered Analysis: Once the text is parsed, boring.interview sends the query to an AI backend for analysis and solution generation.
+4.	Get Solutions: Receive clear, well-documented solutions, complete with explanations and test cases.
+
+## Who Is It For?
+
+### boring.interview is perfect for:
+- Developers and Programmers: Quickly debug, solve, or understand coding problems with minimal effort.
+- Students and Learners: Gain a deeper understanding of programming concepts with detailed explanations and real-world examples.
+- Technical Interviewees: Practice solving coding challenges with guided support and insights.
+
+### Why boring.interview?
+
+With its streamlined workflow, minimalist UI, and AI-powered capabilities, boring.interview eliminates the friction of manually copying problems or searching for solutions. By focusing on delivering clear, actionable insights, boring.interview becomes an indispensable tool for anyone involved in the world of programming. Whether you’re a professional developer or a curious learner, boring.interview is here to make problem-solving smarter, faster, and easier.
 
 ## Features
 
 - **Automatic Full-Screen OCR**: Continuously captures and processes the entire screen, no manual region selection required.
 - **Periodic OCR Analysis**: Every few seconds, the app takes a snapshot and extracts text.
-- **Local Question Solver**: Quick responses for known queries (e.g., "What time is it?").
 - **ChatGPT Integration**: For unknown questions, queries ChatGPT via the OpenAI API.
 - **Markdown Rendering**: Answers are displayed with rich formatting using `react-markdown` and `remark-gfm`.
 
@@ -17,21 +40,6 @@ This application captures your screen, extracts text via OCR, identifies questio
 - **OpenAI API Key**: Obtain at [OpenAI's Website](https://platform.openai.com/)
 
 ## Project Structure
-```
-your_project/
-├─ server/
-│  ├─ .env
-│  ├─ package.json
-│  └─ server.js
-└─ client/
-├─ index.html
-├─ package.json
-├─ vite.config.ts
-└─ src/
-├─ App.tsx
-├─ main.tsx
-└─ style.css
-```
 
 ### `.env` file (in `server/`)
 ```bash
@@ -79,7 +87,7 @@ npm run dev
 5.	Otherwise, it sends the question to ChatGPT for an answer.
 6.	The recognized text and the final answer (in Markdown) will be displayed on the page.
 
-## Technologies Used
+## Tech Stack
 -	Frontend: React, Vite, TypeScript
 -	OCR: Tesseract.js (no external OCR API needed)
 -	ChatGPT Integration: OpenAI Node.js SDK
