@@ -306,6 +306,20 @@ function App() {
     transition: 'left 0.3s'
   });
 
+  const solveButtonStyles: React.CSSProperties = {
+    display: 'block', // Makes the button a block-level element
+    width: '100%',    // Ensures the button takes up the full width of the parent
+    padding: '10px 20px', // Adjust padding for better aesthetics
+    backgroundColor: isDarkMode ? '#444' : '#eee',
+    color: isDarkMode ? '#fff' : '#000',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '16px', // Adjust font size to balance the new width
+    cursor: 'pointer',
+    textAlign: 'center',
+    transition: 'transform 0.2s, background-color 0.3s'
+  };
+
   const toggleAutoMode = () => {
     setIsAutoMode(!isAutoMode);
   };
@@ -440,16 +454,8 @@ function App() {
             {stream && !isAutoMode && (
               <div style={{ marginTop: '20px' }}>
                 <button
-                  onClick={handleManualProcess}
-                  style={{
-                    padding: '10px 20px',
-                    fontSize: '1rem',
-                    backgroundColor: isDarkMode ? '#fdfdfd' : '#222',
-                    color: isDarkMode ? '#000' : '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}>
+                  style={solveButtonStyles}
+                  onClick={handleManualProcess}>
                   Solve!
                 </button>
               </div>
