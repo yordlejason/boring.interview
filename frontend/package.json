@@ -7,14 +7,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "jwt-decode": "^4.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
-    "tesseract.js": "^4.1.4"
+    "tesseract.js": "^5.1.1"
   },
   "devDependencies": {
+    "@types/jwt-decode": "^2.2.1",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "typescript": "^5.0.4",
