@@ -2,6 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
+
+const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -15,8 +19,37 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isWaitingForApi, setIsWaitingForApi] = useState<boolean>(false);
   const [intervalSeconds, setIntervalSeconds] = useState<number>(10); // Default 10 seconds
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const responseGoogle = (response: any) => {
+    // Safely decode the credential, confirm it's valid before setting auth
+    if (response?.credential) {
+      const decoded: any = jwtDecode(response.credential);
+      if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
+        localStorage.setItem('authToken', response.credential);
+        setIsAuthenticated(true);
+        localStorage.setItem('isAuthenticated', 'true');
+      } else {
+        console.error("Token expired or invalid.");
+      }
+    } else {
+      console.error("Google login failed:", response);
+    }
+  };
 
   useEffect(() => {
+    // On app load, verify stored token, ensure it's not expired
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
+        setIsAuthenticated(true);
+      } else {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+      }
+    }
+
     const storedDarkMode = localStorage.getItem('isDarkMode');
     if (storedDarkMode === 'true') setIsDarkMode(true);
 
@@ -29,6 +62,15 @@ function App() {
       if (!isNaN(val)) setIntervalSeconds(val);
     }
   }, []);
+
+  const handleLogout = () => {
+    // Clear token as well
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('isAuthenticated');
+    setIsAuthenticated(false);
+    setStream(null);
+    setAnswer('');
+  };
 
   useEffect(() => {
     localStorage.setItem('isDarkMode', isDarkMode.toString());
@@ -55,6 +97,10 @@ function App() {
   }, [stream]);
 
   const startCapture = async () => {
+    if (!isAuthenticated) {
+      alert("Please log in to start screen capture.");
+      return;
+    }
     try {
       const captureStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
       setStream(captureStream);
@@ -88,6 +134,10 @@ function App() {
   };
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setIsProcessing(false);
+      return;
+    }
     if (!stream || !videoRef.current || !canvasRef.current || !isAutoMode) {
       setIsProcessing(false);
       return;
@@ -97,7 +147,7 @@ function App() {
     const interval = setInterval(() => runOCR(), intervalDuration);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream, isProcessing, isAutoMode, isWaitingForApi, intervalSeconds]);
+  }, [stream, isProcessing, isAutoMode, isWaitingForApi, intervalSeconds, isAuthenticated]);
 
   const runOCR = async () => {
     if (!stream || !videoRef.current || !canvasRef.current) return;
@@ -225,11 +275,12 @@ function App() {
     transition: 'background-color 0.3s'
   };
 
-  const bigCenterMessage: React.CSSProperties = {
+  const bigCenterMessage = {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
     textAlign: 'center' as const,
-    fontSize: '1.5rem',
-    marginTop: '40px',
-    color: secondaryTextColor
+    marginTop: '50px',
   };
 
   const rightButtonContainer: React.CSSProperties = {
@@ -361,19 +412,19 @@ function App() {
     marginTop: '20px',
     marginBottom: '10px'
   };
-  
+
   const progressBarSegment: React.CSSProperties = {
     flex: 1,
     height: '8px',
     borderRadius: '4px',
     margin: '0 10px', // Increased spacing between bars for better centering
   };
-  
+
   const progressBarWrapper: React.CSSProperties = {
     textAlign: 'center', // Centers the label with respect to the bar
     flex: 1,
   };
-  
+
   const stepLabels: React.CSSProperties = {
     fontSize: '12px',
     color: secondaryTextColor,
@@ -382,150 +433,177 @@ function App() {
   };
 
   return (
-    <>
-      <style>{globalBgCSS}</style>
-      <style>{`
+    <GoogleOAuthProvider clientId={clientId}>
+      <>
+        <style>{globalBgCSS}</style>
+        <style>{`
         button:hover {
           transform: translateY(-2px);
         }
       `}</style>
-      <div style={containerStyles}>
-        <h1 style={headingStyles}>boring.interview</h1>
+        <div style={containerStyles}>
+          <h1 style={headingStyles}>boring.interview</h1>
 
-        {stream && isAutoMode && (
-          <p style={{ textAlign: 'center', color: secondaryTextColor }}>
-            Capturing screen. The process runs every {intervalSeconds}s in Auto mode.
-          </p>
-        )}
+          {isAuthenticated ? (
+            <>
+              {stream && isAutoMode && (
+                <p style={{ textAlign: 'center', color: secondaryTextColor }}>
+                  Capturing screen. The process runs every {intervalSeconds}s in Auto mode.
+                </p>
+              )}
 
-        {stream && !isAutoMode && (
-          <p style={{ textAlign: 'center', color: secondaryTextColor }}>
-            Auto mode is disabled. Click "Solve!" to run once.
-          </p>
-        )}
+              {stream && !isAutoMode && (
+                <p style={{ textAlign: 'center', color: secondaryTextColor }}>
+                  Auto mode is disabled. Click "Solve!" to run once.
+                </p>
+              )}
 
-        {stream && (
-          <div style={videoWrapperStyles}>
-            <video ref={videoRef} style={{ width: '100%', height: 'auto', display: 'block' }}></video>
-          </div>
-        )}
-
-        {!stream ? (
-          <div style={bigCenterMessage}>
-            <button
-              onClick={startCapture}
-              style={{
-                padding: '20px',
-                fontSize: '1rem',
-                backgroundColor: isDarkMode ? '#fdfdfd' : '#222',
-                color: isDarkMode ? '#000' : '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer'
-              }}>
-              Screen Sharing Required
-            </button>
-          </div>
-        ) : (
-          <>
-            <h2 style={sectionHeadingStyles}>Status</h2>
-
-            {/* Modernized Progress Bar */}
-            <div>
-              <div style={progressBarContainer}>
-                {/* Step 1 */}
-                <div style={progressBarWrapper}>
-                  <div style={{ ...progressBarSegment, backgroundColor: step1Color }}></div>
-                  <div style={stepLabels}>Screen Capture</div>
+              {stream && (
+                <div style={videoWrapperStyles}>
+                  <video ref={videoRef} style={{ width: '100%', height: 'auto', display: 'block' }}></video>
                 </div>
-                {/* Step 2 */}
-                <div style={progressBarWrapper}>
-                  <div style={{ ...progressBarSegment, backgroundColor: step2Color }}></div>
-                  <div style={stepLabels}>Parsing Texts</div>
-                </div>
-                {/* Step 3 */}
-                <div style={progressBarWrapper}>
-                  <div style={{ ...progressBarSegment, backgroundColor: step3Color }}></div>
-                  <div style={stepLabels}>Solving...</div>
-                </div>
-              </div>
-            </div>
+              )}
 
-            {stream && !isAutoMode && (
-              <div style={{ marginTop: '20px' }}>
-                <button
-                  style={solveButtonStyles}
-                  onClick={handleManualProcess}>
-                  Solve!
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {stream && answer && (
-          <div style={{ marginTop: '30px' }}>
-            <h2 style={sectionHeadingStyles}>Answer</h2>
-            <div style={answerBoxStyles} className="answer-box">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {answer}
-              </ReactMarkdown>
-            </div>
-          </div>
-        )}
-
-        <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-
-        {/* Bottom-right container for settings */}
-        <div style={rightButtonContainer}>
-          <div style={{ position: 'relative' }}>
-            <button
-              style={settingsButtonStyles}
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-            >
-              Settings
-            </button>
-            <div style={settingsPanelStyles}>
-              <div style={settingsItemStyles}>
-                <span style={labelStyles}>Dark Mode</span>
-                <div style={switchContainerStyles(isDarkMode)} onClick={() => setIsDarkMode(!isDarkMode)}>
-                  <div style={switchKnobStyles(isDarkMode)}></div>
+              {!stream ? (
+                <div style={bigCenterMessage}>
+                  <button
+                    onClick={startCapture}
+                    style={{
+                      padding: '20px',
+                      fontSize: '1rem',
+                      backgroundColor: isDarkMode ? '#fdfdfd' : '#222',
+                      color: isDarkMode ? '#000' : '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}>
+                    Screen Sharing Required
+                  </button>
                 </div>
-              </div>
-              <div style={settingsItemStyles}>
-                <span style={labelStyles}>Auto</span>
-                <div 
-                  style={switchContainerStyles(isAutoMode)} 
-                  onClick={toggleAutoMode}
-                  data-tooltip="When enabled, the screen will be processed automatically every few seconds."
-                >
-                  <div style={switchKnobStyles(isAutoMode)}></div>
+              ) : (
+                <>
+                  <h2 style={sectionHeadingStyles}>Status</h2>
+
+                  {/* Modernized Progress Bar */}
+                  <div>
+                    <div style={progressBarContainer}>
+                      {/* Step 1 */}
+                      <div style={progressBarWrapper}>
+                        <div style={{ ...progressBarSegment, backgroundColor: step1Color }}></div>
+                        <div style={stepLabels}>Screen Capture</div>
+                      </div>
+                      {/* Step 2 */}
+                      <div style={progressBarWrapper}>
+                        <div style={{ ...progressBarSegment, backgroundColor: step2Color }}></div>
+                        <div style={stepLabels}>Parsing Texts</div>
+                      </div>
+                      {/* Step 3 */}
+                      <div style={progressBarWrapper}>
+                        <div style={{ ...progressBarSegment, backgroundColor: step3Color }}></div>
+                        <div style={stepLabels}>Solving...</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {stream && !isAutoMode && (
+                    <div style={{ marginTop: '20px' }}>
+                      <button
+                        style={solveButtonStyles}
+                        onClick={handleManualProcess}>
+                        Solve!
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {stream && answer && (
+                <div style={{ marginTop: '30px' }}>
+                  <h2 style={sectionHeadingStyles}>Answer</h2>
+                  <div style={answerBoxStyles} className="answer-box">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {answer}
+                    </ReactMarkdown>
+                  </div>
                 </div>
-              </div>
-              <div style={settingsItemStyles}>
-                <span style={labelStyles}>Interval (s)</span>
-                <input 
-                  type="number" 
-                  min="1"
-                  value={intervalSeconds} 
-                  onChange={(e) => setIntervalSeconds(Math.max(1, parseInt(e.target.value) || 1))}
-                  style={{
-                    width: '60px',
-                    backgroundColor: isDarkMode ? '#333' : '#fff',
-                    color: textColor,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: '4px',
-                    padding: '2px 5px',
-                    fontFamily: 'Inter, sans-serif',
-                    fontSize: '14px'
-                  }}
+              )}
+            </>
+          ) : (
+            <div style={bigCenterMessage}>
+              Please log in to use the features.
+              <div style={{ marginTop: '20px', transform: 'scale(1.2)' }}>
+                <GoogleLogin
+                  onSuccess={responseGoogle}
+                  onError={() => console.error("Google login failed")}
                 />
               </div>
             </div>
+          )}
+
+          <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+
+          {/* Bottom-right container for settings and logout */}
+          <div style={rightButtonContainer}>
+            <div style={{ position: 'relative' }}>
+              <button
+                style={settingsButtonStyles}
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              >
+                Settings
+              </button>
+              <div style={settingsPanelStyles}>
+                <div style={settingsItemStyles}>
+                  <span style={labelStyles}>Dark Mode</span>
+                  <div style={switchContainerStyles(isDarkMode)} onClick={() => setIsDarkMode(!isDarkMode)}>
+                    <div style={switchKnobStyles(isDarkMode)}></div>
+                  </div>
+                </div>
+                <div style={settingsItemStyles}>
+                  <span style={labelStyles}>Auto</span>
+                  <div
+                    style={switchContainerStyles(isAutoMode)}
+                    onClick={toggleAutoMode}
+                    data-tooltip="When enabled, the screen will be processed automatically every few seconds."
+                  >
+                    <div style={switchKnobStyles(isAutoMode)}></div>
+                  </div>
+                </div>
+                <div style={settingsItemStyles}>
+                  <span style={labelStyles}>Interval (s)</span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={intervalSeconds}
+                    onChange={(e) => setIntervalSeconds(Math.max(1, parseInt(e.target.value) || 1))}
+                    style={{
+                      width: '60px',
+                      backgroundColor: isDarkMode ? '#333' : '#fff',
+                      color: textColor,
+                      border: `1px solid ${borderColor}`,
+                      borderRadius: '4px',
+                      padding: '2px 5px',
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: '14px'
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+            {isAuthenticated && (
+              <button
+                onClick={handleLogout}
+                style={{
+                  ...settingsButtonStyles,
+                  marginTop: '10px'  // Add spacing between settings and logout buttons
+                }}
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
-      </div>
-    </>
+      </>
+    </GoogleOAuthProvider>
   );
 }
 
