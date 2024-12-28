@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "lint": "eslint .",
-    "deploy": "echo 'Deploying server...' && your-deploy-command-here"
+    "deploy": "echo 'Deploying server...'"
   },
   "dependencies": {
     "cors": "^2.8.5",
