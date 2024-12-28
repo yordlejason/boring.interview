@@ -16,9 +16,9 @@ Currently, two official plugins are available:
    ```bash
    git clone https://github.com/yordlejason/boring.interview.git
    ```
-2. **Navigate to the frontend directory**
+2. **Navigate to the client directory**
    ```bash
-   cd boring.interview/frontend
+   cd boring.interview/client
    ```
 3. **Install dependencies**
    ```bash

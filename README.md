@@ -76,7 +76,7 @@ npm start
 ```
 The server runs at http://localhost:3000.
 
-2.	Start the Frontend (Client):
+2.	Start the Client:
 ```bash
 cd ../frontend
 npm run dev
@@ -91,7 +91,7 @@ npm run dev
 6.	The recognized text and the final answer (in Markdown) will be displayed on the page.
 
 ## Tech Stack
--	Frontend: React, Vite, TypeScript
+-	Client: React, Vite, TypeScript
 -	OCR: Tesseract.js (no external OCR API needed)
 -	ChatGPT Integration: OpenAI Node.js SDK
 -	Markdown Rendering: react-markdown + remark-gfm
