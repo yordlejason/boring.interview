@@ -1,5 +1,8 @@
 # boring.interview
 
+![License](https://img.shields.io/github/license/yordlejason/boring.interview)
+![Version](https://img.shields.io/github/v/release/yordlejason/boring.interview)
+
 boring.interview is an innovative tool designed to simplify the process of solving programming-related challenges through seamless integration of OCR (Optical Character Recognition) and AI-powered assistance. Built with a focus on efficiency, accessibility, and modern design, boring.interview empowers developers to extract, analyze, and solve coding problems directly from their screens in real time.
 
 ### Key Features:
@@ -103,3 +106,7 @@ npm run dev
 - `Configuration is not a constructor error`: Ensure you have the latest OpenAI Node.js SDK and a compatible Node.js version.
 - Permission issues capturing the screen: Verify that the browser supports `getDisplayMedia()` and that you have allowed screen capture.
 - No questions detected: Ensure the on-screen text is clearly visible and recognizable by OCR.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
