@@ -26,9 +26,8 @@ function App() {
     if (response?.credential) {
       const decoded: any = jwtDecode(response.credential);
       if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-        localStorage.setItem('authToken', response.credential);
+        document.cookie = `authToken=${response.credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
         setIsAuthenticated(true);
-        localStorage.setItem('isAuthenticated', 'true');
       } else {
         console.error("Token expired or invalid.");
       }
@@ -39,14 +38,12 @@ function App() {
 
   useEffect(() => {
     // On app load, verify stored token, ensure it's not expired
-    const token = localStorage.getItem('authToken');
-    if (token) {
+    const cookieMatch = document.cookie.match(/^(.*;)?\s*authToken\s*=\s*([^;]+)(.*)?$/);
+    if (cookieMatch) {
+      const token = cookieMatch[2];
       const decoded: any = jwtDecode(token);
       if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
         setIsAuthenticated(true);
-      } else {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('isAuthenticated');
       }
     }
 
@@ -64,9 +61,7 @@ function App() {
   }, []);
 
   const handleLogout = () => {
-    // Clear token as well
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('isAuthenticated');
+    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     setIsAuthenticated(false);
     setStream(null);
     setAnswer('');
