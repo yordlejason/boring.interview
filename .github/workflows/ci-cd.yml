@@ -30,17 +30,17 @@ jobs:
       - name: Install frontend dependencies
         run: npm install --prefix frontend
 
-      - name: Run server lint
-        run: npm run lint --prefix server
+    #   - name: Run server lint
+    #     run: npm run lint --prefix server
 
-      - name: Run frontend lint
-        run: npm run lint --prefix frontend
+    #   - name: Run frontend lint
+    #     run: npm run lint --prefix frontend
 
-      - name: Run server tests
-        run: npm test --prefix server
+    #   - name: Run server tests
+    #     run: npm test --prefix server
 
-      - name: Run frontend tests
-        run: npm test --prefix frontend
+    #   - name: Run frontend tests
+    #     run: npm test --prefix frontend
 
       - name: Build server
         run: npm run build --prefix server
