@@ -64,7 +64,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm install --prefix frontend
 
-      - name: Deploy to Production
-        run: npm run deploy
+      - name: Deploy Server to Production
+        run: npm run deploy --prefix server
         env:
-          ENVIRONMENT: production
+            ENVIRONMENT: production
+
+      - name: Deploy Client to Production
+        run: npm run deploy --prefix frontend
+        env:
+            ENVIRONMENT: production
