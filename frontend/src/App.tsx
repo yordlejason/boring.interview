@@ -7,6 +7,93 @@ import { jwtDecode } from 'jwt-decode';
 
 const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
 
+// Helper for validating and storing Google's auth token
+function handleGoogleAuthToken(credential: string) {
+  try {
+    const decoded: any = jwtDecode(credential);
+    if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
+      document.cookie = `authToken=${credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
+      return true;
+    }
+  } catch (err) {
+    console.error("Token validation error:", err);
+  }
+  return false;
+}
+
+// Extract logic for capturing screen into a dedicated function
+async function captureScreen(setStream: React.Dispatch<React.SetStateAction<MediaStream|null>>, setAnswer: any, setIsProcessing: any, setIsWaitingForApi: any, isAuthenticated: boolean) {
+  if (!isAuthenticated) {
+    alert("Please log in to start screen capture.");
+    return;
+  }
+  try {
+    const media = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    setStream(media);
+    setAnswer('');
+    setIsProcessing(false);
+    setIsWaitingForApi(false);
+  } catch (err) {
+    console.error("Screen capture failed:", err);
+  }
+}
+
+// Helper to query ChatGPT
+async function askChatGPT(question: string, setAnswer: any, setIsWaitingForApi: any) {
+  setIsWaitingForApi(true);
+  try {
+    const resp = await fetch('http://localhost:3000/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await resp.json();
+    if (data.answer) {
+      setAnswer(data.answer);
+    } else {
+      console.warn("No answer received from ChatGPT.");
+    }
+  } catch (error) {
+    console.error("Error querying ChatGPT:", error);
+  } finally {
+    setIsWaitingForApi(false);
+  }
+}
+
+// Move OCR steps into its own function
+async function performOCR(
+  videoRef: React.RefObject<HTMLVideoElement>,
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  isDarkMode: boolean,
+  isProcessing: boolean,
+  setIsProcessing: any,
+  setIsWaitingForApi: any,
+  askChatGPTFn: (text: string) => Promise<void>
+) {
+  if (!videoRef.current || !canvasRef.current || isProcessing) return;
+  const video = videoRef.current;
+  const canvas = canvasRef.current;
+  const ctx = canvas.getContext('2d');
+  if (!ctx || !video.videoWidth || !video.videoHeight) return;
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+
+  setIsProcessing(true);
+  try {
+    const dataUrl = canvas.toDataURL('image/png');
+    const { data: { text } } = await Tesseract.recognize(dataUrl, 'eng');
+    if (text) {
+      await askChatGPTFn(text);
+    }
+  } catch (ocrErr) {
+    console.error("OCR Error:", ocrErr);
+  } finally {
+    setIsProcessing(false);
+  }
+}
+
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -22,15 +109,8 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const responseGoogle = (response: any) => {
-    // Safely decode the credential, confirm it's valid before setting auth
-    if (response?.credential) {
-      const decoded: any = jwtDecode(response.credential);
-      if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-        document.cookie = `authToken=${response.credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
-        setIsAuthenticated(true);
-      } else {
-        console.error("Token expired or invalid.");
-      }
+    if (response?.credential && handleGoogleAuthToken(response.credential)) {
+      setIsAuthenticated(true);
     } else {
       console.error("Google login failed:", response);
     }
@@ -92,40 +172,20 @@ function App() {
   }, [stream]);
 
   const startCapture = async () => {
-    if (!isAuthenticated) {
-      alert("Please log in to start screen capture.");
-      return;
-    }
-    try {
-      const captureStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      setStream(captureStream);
-      setAnswer('');
-      setIsProcessing(false);
-      setIsWaitingForApi(false);
-    } catch (err) {
-      console.error("Error capturing screen:", err);
-    }
+    await captureScreen(setStream, setAnswer, setIsProcessing, setIsWaitingForApi, isAuthenticated);
   };
 
-  const askChatGPT = async (question: string) => {
-    setIsWaitingForApi(true);
-    try {
-      const resp = await fetch('http://localhost:3000/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
-      });
-      const data = await resp.json();
-      if (data.answer) {
-        setAnswer(data.answer);
-      } else {
-        console.warn("No answer received from ChatGPT.");
-      }
-    } catch (error) {
-      console.error("Error querying ChatGPT:", error);
-    } finally {
-      setIsWaitingForApi(false);
-    }
+  const runOCR = async () => {
+    if (isWaitingForApi) return;
+    await performOCR(
+      videoRef,
+      canvasRef,
+      isDarkMode,
+      isProcessing,
+      setIsProcessing,
+      setIsWaitingForApi,
+      async (text) => await askChatGPT(text, setAnswer, setIsWaitingForApi)
+    );
   };
 
   useEffect(() => {
@@ -143,35 +203,6 @@ function App() {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream, isProcessing, isAutoMode, isWaitingForApi, intervalSeconds, isAuthenticated]);
-
-  const runOCR = async () => {
-    if (!stream || !videoRef.current || !canvasRef.current) return;
-    if (isWaitingForApi) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    if (!ctx || !video.videoWidth || !video.videoHeight) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-
-    if (!isProcessing) {
-      setIsProcessing(true);
-      const dataUrl = canvas.toDataURL('image/png');
-      try {
-        const { data: { text } } = await Tesseract.recognize(dataUrl, 'eng');
-        if (text) {
-          await askChatGPT(text);
-        }
-      } catch (error) {
-        console.error("OCR Error:", error);
-      } finally {
-        setIsProcessing(false);
-      }
-    }
-  };
 
   const bgColor = isDarkMode ? '#1c1c1c' : '#f9f9f7';
   const textColor = isDarkMode ? '#fdfdfd' : '#222';
