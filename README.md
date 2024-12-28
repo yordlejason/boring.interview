@@ -62,9 +62,9 @@ cd server
 npm install
 ```
 
-3.	Install Client Dependencies:
+3.	Install Frontend Dependencies:
 ```bash
-cd ../client
+cd ../frontent
 npm install
 ```
 
@@ -78,7 +78,7 @@ The server runs at http://localhost:3000.
 
 2.	Start the Frontend (Client):
 ```bash
-cd ../client
+cd ../frontend
 npm run dev
 ```
 
