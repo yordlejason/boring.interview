@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "deploy": "echo 'Deploying server...' && your-deploy-command-here"
   },
   "dependencies": {
     "cors": "^2.8.5",

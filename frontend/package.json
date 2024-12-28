@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "echo 'Deploying frontend...' && your-deploy-command-here"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
