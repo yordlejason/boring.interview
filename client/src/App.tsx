@@ -18,9 +18,9 @@ interface DecodedToken {
 // Helper function type definitions
 const handleGoogleAuthToken = (credential: string): boolean => {
   try {
-    const decoded: DecodedToken = jwtDecode<DecodedToken>(credential);
+    const decoded = jwtDecode<DecodedToken>(credential);
     if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-      document.cookie = `authToken=${credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
+      document.cookie = `authToken=${credential}; path=/; Secure; SameSite=Strict; Max-Age=21600`;
       return true;
     }
   } catch (err) {
@@ -144,7 +144,7 @@ function App(): JSX.Element {
     const cookieMatch = document.cookie.match(/^(.*;)?\s*authToken\s*=\s*([^;]+)(.*)?$/);
     if (cookieMatch) {
       const token = cookieMatch[2];
-      const decoded: any = jwtDecode(token);
+      const decoded = jwtDecode<DecodedToken>(token);
       if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
         setIsAuthenticated(true);
       }
