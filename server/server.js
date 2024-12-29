@@ -34,20 +34,28 @@ Your solution must:
 - Time Complexity: Big-O notation with an explanation.
 - Space Complexity: Big-O notation with an explanation.`
 
+const SUPPORTED_MODELS = {
+  'gpt-4o': { max_tokens: 10000 },
+  'o1': { max_tokens: 10000 },
+};
+
 app.post('/api/ask', async (req, res) => {
-  const { question } = req.body;
+  const { question, model = 'gpt-4o' } = req.body;
+  
   if (!question) {
     return res.status(400).json({ error: "No question provided." });
   }
 
+  if (!SUPPORTED_MODELS[model]) {
+    return res.status(400).json({ error: "Unsupported model selected." });
+  }
+
   try {
-    const content = pre_prompt + question
+    const content = pre_prompt + question;
     const response = await openai.chat.completions.create({
-      // model: "o1-mini",
-      model: "gpt-3.5-turbo-0125",
+      model,
       messages: [{ role: "user", content: content }],
-      // max_completion_tokens: 10000
-      max_completion_tokens: 4096
+      max_tokens: SUPPORTED_MODELS[model].max_tokens
     });
 
     const answer = response.choices[0].message.content.trim();
