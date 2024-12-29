@@ -55,14 +55,15 @@ const captureScreen = async (
 const askChatGPT = async (
   question: string,
   setAnswer: React.Dispatch<React.SetStateAction<string>>,
-  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>
+  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>,
+  model: string
 ): Promise<void> => {
   setIsWaitingForApi(true);
   try {
     const resp = await fetch('http://localhost:3000/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question })
+      body: JSON.stringify({ question, model })
     });
     const data = await resp.json();
     if (data.answer) {
@@ -122,6 +123,7 @@ function App(): JSX.Element {
   const [isWaitingForApi, setIsWaitingForApi] = useState(false);
   const [intervalSeconds, setIntervalSeconds] = useState(10);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [model, setModel] = useState('gpt-4o');
 
   const responseGoogle = (response: unknown): void => {
     if (response && typeof response === 'object' && 'credential' in response) {
@@ -202,7 +204,7 @@ function App(): JSX.Element {
       canvasRef,
       isProcessing,
       setIsProcessing,
-      async (text) => await askChatGPT(text, setAnswer, setIsWaitingForApi)
+      async (text) => await askChatGPT(text, setAnswer, setIsWaitingForApi, model)
     );
   };
 
@@ -639,6 +641,17 @@ function App(): JSX.Element {
                       fontSize: '14px'
                     }}
                   />
+                </div>
+                <div style={settingsItemStyles}>
+                  <span style={labelStyles}>Model</span>
+                  <select
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    style={{ backgroundColor: isDarkMode ? '#333' : '#fff', color: textColor }}
+                  >
+                    <option value="gpt-4o">gpt-4o</option>
+                    <option value="o1-preview">o1-preview</option>
+                  </select>
                 </div>
               </div>
             </div>

@@ -34,21 +34,50 @@ Your solution must:
 - Time Complexity: Big-O notation with an explanation.
 - Space Complexity: Big-O notation with an explanation.`
 
+const SUPPORTED_MODELS = {
+  'gpt-4o': { max_tokens: 10000 },
+  'o1-preview': { max_completion_tokens: 10000 },
+};
+
+const COST_PER_1K_PROMPT_TOKENS = {
+  'gpt-4o': 0.03,
+  'o1-preview': 0.001
+};
+
+const COST_PER_1K_COMPLETION_TOKENS = {
+  'gpt-4o': 0.06,
+  'o1-preview': 0.001
+};
+
 app.post('/api/ask', async (req, res) => {
-  const { question } = req.body;
+  const { question, model = 'gpt-4o' } = req.body;
+  
   if (!question) {
     return res.status(400).json({ error: "No question provided." });
   }
 
+  if (!SUPPORTED_MODELS[model]) {
+    return res.status(400).json({ error: "Unsupported model selected." });
+  }
+
   try {
-    const content = pre_prompt + question
+    console.log(`[OpenAI Request] Model: ${model}, question length: ${question.length}`);
+    const content = pre_prompt + question;
     const response = await openai.chat.completions.create({
-      // model: "o1-mini",
-      model: "gpt-3.5-turbo-0125",
+      model,
       messages: [{ role: "user", content: content }],
-      // max_completion_tokens: 10000
-      max_completion_tokens: 4096
+      max_tokens: SUPPORTED_MODELS[model].max_tokens
     });
+
+    const { usage } = response;
+    if (usage) {
+      console.log(`[OpenAI Response] Model: ${model}, Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
+
+      const promptCost = (usage.prompt_tokens / 1000) * COST_PER_1K_PROMPT_TOKENS[model];
+      const completionCost = (usage.completion_tokens / 1000) * COST_PER_1K_COMPLETION_TOKENS[model];
+      const totalCost = promptCost + completionCost;
+      console.log(`[OpenAI Cost] Model: ${model}, Prompt: $${promptCost.toFixed(4)}, Completion: $${completionCost.toFixed(4)}, Total: $${totalCost.toFixed(4)}`);
+    }
 
     const answer = response.choices[0].message.content.trim();
     res.json({ answer });
