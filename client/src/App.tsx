@@ -650,7 +650,7 @@ function App(): JSX.Element {
                     style={{ backgroundColor: isDarkMode ? '#333' : '#fff', color: textColor }}
                   >
                     <option value="gpt-4o">gpt-4o</option>
-                    <option value="o1">o1</option>
+                    <option value="o1-preview">o1-preview</option>
                   </select>
                 </div>
               </div>
