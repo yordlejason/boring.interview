@@ -7,10 +7,18 @@ import { jwtDecode } from 'jwt-decode';
 
 const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
 
-// Helper for validating and storing Google's auth token
-function handleGoogleAuthToken(credential: string) {
+interface GoogleResponse {
+  credential: string;
+}
+
+interface DecodedToken {
+  exp: number;
+}
+
+// Helper function type definitions
+const handleGoogleAuthToken = (credential: string): boolean => {
   try {
-    const decoded: any = jwtDecode(credential);
+    const decoded: DecodedToken = jwtDecode<DecodedToken>(credential);
     if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
       document.cookie = `authToken=${credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
       return true;
@@ -19,10 +27,15 @@ function handleGoogleAuthToken(credential: string) {
     console.error("Token validation error:", err);
   }
   return false;
-}
+};
 
-// Extract logic for capturing screen into a dedicated function
-async function captureScreen(setStream: React.Dispatch<React.SetStateAction<MediaStream|null>>, setAnswer: any, setIsProcessing: any, setIsWaitingForApi: any, isAuthenticated: boolean) {
+const captureScreen = async (
+  setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>,
+  setAnswer: React.Dispatch<React.SetStateAction<string>>,
+  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>,
+  isAuthenticated: boolean
+): Promise<void> => {
   if (!isAuthenticated) {
     alert("Please log in to start screen capture.");
     return;
@@ -36,10 +49,14 @@ async function captureScreen(setStream: React.Dispatch<React.SetStateAction<Medi
   } catch (err) {
     console.error("Screen capture failed:", err);
   }
-}
+};
 
 // Helper to query ChatGPT
-async function askChatGPT(question: string, setAnswer: any, setIsWaitingForApi: any) {
+const askChatGPT = async (
+  question: string,
+  setAnswer: React.Dispatch<React.SetStateAction<string>>,
+  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>
+): Promise<void> => {
   setIsWaitingForApi(true);
   try {
     const resp = await fetch('http://localhost:3000/api/ask', {
@@ -58,16 +75,16 @@ async function askChatGPT(question: string, setAnswer: any, setIsWaitingForApi: 
   } finally {
     setIsWaitingForApi(false);
   }
-}
+};
 
 // Move OCR steps into its own function
-async function performOCR(
+const performOCR = async (
   videoRef: React.RefObject<HTMLVideoElement>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
   isProcessing: boolean,
-  setIsProcessing: any,
+  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
   askChatGPTFn: (text: string) => Promise<void>
-) {
+): Promise<void> => {
   if (!videoRef.current || !canvasRef.current || isProcessing) return;
   const video = videoRef.current;
   const canvas = canvasRef.current;
@@ -92,25 +109,30 @@ async function performOCR(
   }
 }
 
-function App() {
+function App(): JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [answer, setAnswer] = useState<string>('');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
-  const [isAutoMode, setIsAutoMode] = useState<boolean>(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [isWaitingForApi, setIsWaitingForApi] = useState<boolean>(false);
-  const [intervalSeconds, setIntervalSeconds] = useState<number>(10); // Default 10 seconds
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [answer, setAnswer] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isAutoMode, setIsAutoMode] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isWaitingForApi, setIsWaitingForApi] = useState(false);
+  const [intervalSeconds, setIntervalSeconds] = useState(10);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const responseGoogle = (response: any) => {
-    if (response?.credential && handleGoogleAuthToken(response.credential)) {
-      setIsAuthenticated(true);
+  const responseGoogle = (response: unknown): void => {
+    if (response && typeof response === 'object' && 'credential' in response) {
+      const { credential } = response as GoogleResponse;
+      if (credential && handleGoogleAuthToken(credential)) {
+        setIsAuthenticated(true);
+      } else {
+        console.error("Google login failed:", response);
+      }
     } else {
-      console.error("Google login failed:", response);
+      console.error("Invalid response format:", response);
     }
   };
 
@@ -198,7 +220,16 @@ function App() {
     const interval = setInterval(() => runOCR(), intervalDuration);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stream, isProcessing, isAutoMode, isWaitingForApi, intervalSeconds, isAuthenticated]);
+  }, [
+    stream,
+    isProcessing,
+    isAutoMode,
+    isWaitingForApi,
+    intervalSeconds,
+    isAuthenticated,
+    videoRef,
+    canvasRef
+  ]);
 
   const bgColor = isDarkMode ? '#1c1c1c' : '#f9f9f7';
   const textColor = isDarkMode ? '#fdfdfd' : '#222';
