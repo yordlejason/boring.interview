@@ -64,10 +64,8 @@ async function askChatGPT(question: string, setAnswer: any, setIsWaitingForApi: 
 async function performOCR(
   videoRef: React.RefObject<HTMLVideoElement>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  isDarkMode: boolean,
   isProcessing: boolean,
   setIsProcessing: any,
-  setIsWaitingForApi: any,
   askChatGPTFn: (text: string) => Promise<void>
 ) {
   if (!videoRef.current || !canvasRef.current || isProcessing) return;
@@ -180,10 +178,8 @@ function App() {
     await performOCR(
       videoRef,
       canvasRef,
-      isDarkMode,
       isProcessing,
       setIsProcessing,
-      setIsWaitingForApi,
       async (text) => await askChatGPT(text, setAnswer, setIsWaitingForApi)
     );
   };
