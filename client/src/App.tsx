@@ -18,9 +18,9 @@ interface DecodedToken {
 // Helper function type definitions
 const handleGoogleAuthToken = (credential: string): boolean => {
   try {
-    const decoded: DecodedToken = jwtDecode<DecodedToken>(credential);
+    const decoded = jwtDecode<DecodedToken>(credential);
     if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-      document.cookie = `authToken=${credential}; Secure; HttpOnly; SameSite=Strict; Max-Age=21600`;
+      document.cookie = `authToken=${credential}; path=/; Secure; SameSite=Strict; Max-Age=21600`;
       return true;
     }
   } catch (err) {
@@ -113,6 +113,7 @@ const performOCR = async (
 function App(): JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const settingsContainerRef = useRef<HTMLDivElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -143,7 +144,7 @@ function App(): JSX.Element {
     const cookieMatch = document.cookie.match(/^(.*;)?\s*authToken\s*=\s*([^;]+)(.*)?$/);
     if (cookieMatch) {
       const token = cookieMatch[2];
-      const decoded: any = jwtDecode(token);
+      const decoded = jwtDecode<DecodedToken>(token);
       if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
         setIsAuthenticated(true);
       }
@@ -232,6 +233,22 @@ function App(): JSX.Element {
     videoRef,
     canvasRef
   ]);
+
+  useEffect(() => {
+    if (!isSettingsOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        settingsContainerRef.current &&
+        !settingsContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSettingsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSettingsOpen]);
 
   const bgColor = isDarkMode ? '#1c1c1c' : '#f9f9f7';
   const textColor = isDarkMode ? '#fdfdfd' : '#222';
@@ -599,7 +616,7 @@ function App(): JSX.Element {
 
           {/* Bottom-right container for settings and logout */}
           <div style={rightButtonContainer}>
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative' }} ref={settingsContainerRef}>
               <button
                 style={settingsButtonStyles}
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
