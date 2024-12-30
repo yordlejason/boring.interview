@@ -336,6 +336,12 @@ function App(): JSX.Element {
     }
   `;
 
+  const loadingIconKeyframes = `
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  `;
+
   const containerStyles: React.CSSProperties = {
     margin: '0 auto',
     maxWidth: '700px',
@@ -460,17 +466,33 @@ function App(): JSX.Element {
   });
 
   const solveButtonStyles: React.CSSProperties = {
-    display: 'block', // Makes the button a block-level element
-    width: '100%',    // Ensures the button takes up the full width of the parent
-    padding: '10px 20px', // Adjust padding for better aesthetics
-    backgroundColor: isDarkMode ? '#444' : '#eee',
-    color: isDarkMode ? '#fff' : '#000',
+    display: 'block',
+    width: '100%',
+    padding: '15px 25px',
+    backgroundColor: isDarkMode ? '#4caf50' : '#4caf50',
+    color: '#fff',
     border: 'none',
-    borderRadius: '4px',
-    fontSize: '16px', // Adjust font size to balance the new width
+    borderRadius: '8px',
+    fontSize: '18px',
+    fontWeight: 'bold',
     cursor: 'pointer',
     textAlign: 'center',
-    transition: 'transform 0.2s, background-color 0.3s'
+    transition: 'transform 0.2s, background-color 0.3s',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+  };
+
+  const solveButtonHoverStyles: React.CSSProperties = {
+    backgroundColor: isDarkMode ? '#45a049' : '#45a049',
+  };
+
+  const loadingIconStyles: React.CSSProperties = {
+    display: 'inline-block',
+    width: '20px',
+    height: '20px',
+    border: '3px solid rgba(255, 255, 255, 0.3)',
+    borderRadius: '50%',
+    borderTopColor: '#fff',
+    animation: 'spin 1s ease-in-out infinite',
   };
 
   const dropdownStyles: React.CSSProperties = {
@@ -558,6 +580,7 @@ function App(): JSX.Element {
     <GoogleOAuthProvider clientId={clientId}>
       <>
         <style>{globalBgCSS}</style>
+        <style>{loadingIconKeyframes}</style>
         <style>{`
         button:hover {
           transform: translateY(-2px);
@@ -632,9 +655,11 @@ function App(): JSX.Element {
                   {stream && !isAutoMode && (
                     <div style={{ marginTop: '20px' }}>
                       <button
-                        style={solveButtonStyles}
-                        onClick={handleManualProcess}>
-                        Solve!
+                        style={{ ...solveButtonStyles, ...(isDarkMode ? solveButtonHoverStyles : {}) }}
+                        onClick={handleManualProcess}
+                        disabled={isWaitingForApi}
+                      >
+                        {isWaitingForApi ? <span style={loadingIconStyles}></span> : 'Solve!'}
                       </button>
                     </div>
                   )}
