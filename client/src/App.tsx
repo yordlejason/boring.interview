@@ -110,6 +110,11 @@ const performOCR = async (
   }
 }
 
+const getSliderBackground = (value: number): string => {
+  const percentage = ((value - 5) / 55) * 100;
+  return `linear-gradient(to right, #4caf50 ${percentage}%, #ffa726 ${percentage}%, #ef5350 100%)`;
+};
+
 function App(): JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -305,11 +310,35 @@ function App(): JSX.Element {
       h1 { font-size: 1.8rem; }
       .answer-box { font-size: 0.9rem; }
     }
+
+    [data-tooltip] {
+      position: relative;
+      cursor: pointer;
+    }
+    [data-tooltip]::before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 10;
+    }
+    [data-tooltip]:hover::before {
+      opacity: 1;
+    }
   `;
 
   const containerStyles: React.CSSProperties = {
     margin: '0 auto',
-    maxWidth: '600px',
+    maxWidth: '700px',
     padding: '40px 20px',
     transition: 'color 0.3s',
     minHeight: '100vh'
@@ -395,7 +424,8 @@ function App(): JSX.Element {
   const settingsItemStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: '10px'
+    marginBottom: '10px',
+    whiteSpace: 'nowrap' // Prevent line breaks
   };
 
   const labelStyles: React.CSSProperties = {
@@ -625,42 +655,46 @@ function App(): JSX.Element {
               </button>
               <div style={settingsPanelStyles}>
                 <div style={settingsItemStyles}>
-                  <span style={labelStyles}>Dark Mode</span>
+                  <span style={{ ...labelStyles }} data-tooltip="Switch between light/dark theme">Dark Mode</span>
                   <div style={switchContainerStyles(isDarkMode)} onClick={() => setIsDarkMode(!isDarkMode)}>
                     <div style={switchKnobStyles(isDarkMode)}></div>
                   </div>
                 </div>
                 <div style={settingsItemStyles}>
-                  <span style={labelStyles}>Auto</span>
+                  <span style={{ ...labelStyles }} data-tooltip="When enabled, the screen will be processed automatically every few seconds.">Auto Mode</span>
                   <div
                     style={switchContainerStyles(isAutoMode)}
                     onClick={toggleAutoMode}
-                    data-tooltip="When enabled, the screen will be processed automatically every few seconds."
                   >
                     <div style={switchKnobStyles(isAutoMode)}></div>
                   </div>
                 </div>
+                {isAutoMode && (
+                  <div style={settingsItemStyles}>
+                    <span style={{ ...labelStyles }} data-tooltip="Screen capture frequency in seconds">Interval (s)</span>
+                    <input
+                      type="range"
+                      min="5"
+                      max="60"
+                      step="5"
+                      value={intervalSeconds}
+                      onChange={(e) => setIntervalSeconds(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{
+                        width: '100%',
+                        background: getSliderBackground(intervalSeconds),
+                        color: textColor,
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: '4px',
+                        padding: '2px 5px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '14px'
+                      }}
+                    />
+                    <span style={labelStyles}>{intervalSeconds}</span>
+                  </div>
+                )}
                 <div style={settingsItemStyles}>
-                  <span style={labelStyles}>Interval (s)</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={intervalSeconds}
-                    onChange={(e) => setIntervalSeconds(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{
-                      width: '60px',
-                      backgroundColor: isDarkMode ? '#333' : '#fff',
-                      color: textColor,
-                      border: `1px solid ${borderColor}`,
-                      borderRadius: '4px',
-                      padding: '2px 5px',
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '14px'
-                    }}
-                  />
-                </div>
-                <div style={settingsItemStyles}>
-                  <span style={labelStyles}>Model</span>
+                  <span style={{ ...labelStyles }} data-tooltip="Select a ChatGPT model">Model</span>
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
