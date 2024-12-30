@@ -473,6 +473,26 @@ function App(): JSX.Element {
     transition: 'transform 0.2s, background-color 0.3s'
   };
 
+  const dropdownStyles: React.CSSProperties = {
+    width: '100%',
+    padding: '8px',
+    borderRadius: '4px',
+    border: `1px solid ${borderColor}`,
+    backgroundColor: isDarkMode ? '#333' : '#fff',
+    color: textColor,
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '14px',
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    backgroundImage: isDarkMode
+      ? 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23fff\'%3E%3Cpath d=\'M7 10l5 5 5-5z\'/%3E%3C/svg%3E")'
+      : 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%23000\'%3E%3Cpath d=\'M7 10l5 5 5-5z\'/%3E%3C/svg%3E")',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 10px center',
+    backgroundSize: '12px',
+  };
+
   const toggleAutoMode = () => {
     setIsAutoMode(!isAutoMode);
   };
@@ -578,7 +598,9 @@ function App(): JSX.Element {
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer'
-                    }}>
+                    }}
+                    data-tooltip="Screen sharing is required to capture and process the content on your screen."
+                  >
                     Screen Sharing Required
                   </button>
                 </div>
@@ -674,9 +696,9 @@ function App(): JSX.Element {
                     <span style={{ ...labelStyles }} data-tooltip="Screen capture frequency in seconds">Interval (s)</span>
                     <input
                       type="range"
-                      min="5"
-                      max="60"
-                      step="5"
+                      min="15"
+                      max="300"
+                      step="15"
                       value={intervalSeconds}
                       onChange={(e) => setIntervalSeconds(Math.max(1, parseInt(e.target.value) || 1))}
                       style={{
@@ -698,7 +720,7 @@ function App(): JSX.Element {
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
-                    style={{ backgroundColor: isDarkMode ? '#333' : '#fff', color: textColor }}
+                    style={dropdownStyles}
                   >
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="o1-preview">o1-preview</option>
