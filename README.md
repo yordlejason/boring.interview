@@ -12,7 +12,7 @@ boring.interview is designed to solve the coding questions through the integrati
 
 ## Prerequisites
 
-- **Node.js** (LTS recommended, e.g., Node 18 or 20)
+- **Node.js** (LTS recommended, works perfectly well with [v22.7.0](https://nodejs.org/en/blog/release/v22.7.0))
 - **npm** or **yarn** for package management
 - **OpenAI API Key**: Obtain at [OpenAI's Website](https://platform.openai.com/)
 
