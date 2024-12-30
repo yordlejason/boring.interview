@@ -683,7 +683,7 @@ function App(): JSX.Element {
                   </div>
                 </div>
                 <div style={settingsItemStyles}>
-                  <span style={{ ...labelStyles }} data-tooltip="When enabled, the screen will be processed automatically every few seconds.">Auto Mode</span>
+                  <span style={{ ...labelStyles }} data-tooltip={`Auto-solve questions every ${intervalSeconds} seconds when enabled.`}>Auto Mode</span>
                   <div
                     style={switchContainerStyles(isAutoMode)}
                     onClick={toggleAutoMode}
