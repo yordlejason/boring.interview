@@ -15,7 +15,7 @@ Step 1: Parse the Question
 - Extract and clean the question from the raw OCR result.
 - Ensure the problem statement is complete, grammatically correct, and unambiguous.
 - Identify key requirements, constraints, and input-output formats from the question. If missing, provide the questions that interviees should ask to interviewers.
-- Provide 3-5 test cases to validate the solution.
+- Provide 3 test cases to validate the solution.
 
 Step 2: Plan the Solution
 Provide the plan for the proposed solution. 
@@ -24,7 +24,7 @@ Provide the plan for the proposed solution.
 - What data structures and algorithms we will use.
 
 Step 3: Solve the Question
-Provide a solution based on Step 2 using Python unless another language is explicitly specified.
+Provide a solution based on Step 2 using Python3 unless another language is explicitly specified.
 
 Your solution must:
 - Include clean, industry-standard code with comments explaining each part.
