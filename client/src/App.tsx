@@ -78,6 +78,32 @@ const askChatGPT = async (
   }
 };
 
+// Helper to query DeepSeek API
+const askDeepSeek = async (
+  question: string,
+  setAnswer: React.Dispatch<React.SetStateAction<string>>,
+  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>
+): Promise<void> => {
+  setIsWaitingForApi(true);
+  try {
+    const resp = await fetch('http://localhost:3000/api/deepseek', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await resp.json();
+    if (data.answer) {
+      setAnswer(data.answer);
+    } else {
+      console.warn("No answer received from DeepSeek.");
+    }
+  } catch (error) {
+    console.error("Error querying DeepSeek:", error);
+  } finally {
+    setIsWaitingForApi(false);
+  }
+};
+
 // Move OCR steps into its own function
 const performOCR = async (
   videoRef: React.RefObject<HTMLVideoElement>,
@@ -210,7 +236,13 @@ function App(): JSX.Element {
       canvasRef,
       isProcessing,
       setIsProcessing,
-      async (text) => await askChatGPT(text, setAnswer, setIsWaitingForApi, model)
+      async (text) => {
+        if (model === 'deepseek') {
+          await askDeepSeek(text, setAnswer, setIsWaitingForApi);
+        } else {
+          await askChatGPT(text, setAnswer, setIsWaitingForApi, model);
+        }
+      }
     );
   };
 
@@ -749,6 +781,7 @@ function App(): JSX.Element {
                   >
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="o1-preview">o1-preview</option>
+                    <option value="deepseek">deepseek</option>
                   </select>
                 </div>
               </div>
