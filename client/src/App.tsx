@@ -15,6 +15,86 @@ interface DecodedToken {
   exp: number;
 }
 
+// 1. Introduce an interface for LLM services (ISP, DIP)
+interface ILLMService {
+  ask(question: string): Promise<string | null>;
+}
+
+// 2. Implement separate classes for each LLM (OCP)
+class ChatGPTService implements ILLMService {
+  async ask(question: string): Promise<string | null> {
+    try {
+      const resp = await fetch('http://localhost:3000/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, model: 'gpt-4o' })
+      });
+      const data = await resp.json();
+      return data.answer || null;
+    } catch (error) {
+      console.error("Error querying ChatGPT:", error);
+      return null;
+    }
+  }
+}
+
+class DeepSeekService implements ILLMService {
+  async ask(question: string): Promise<string | null> {
+    try {
+      const resp = await fetch('http://localhost:3000/api/deepseek', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+      const data = await resp.json();
+      return data.answer || null;
+    } catch (error) {
+      console.error("Error querying DeepSeek:", error);
+      return null;
+    }
+  }
+}
+
+// 3. Extract token validations into an AuthService (SRP)
+class AuthService {
+  static storeToken(credential: string): boolean {
+    try {
+      const decoded = jwtDecode<DecodedToken>(credential);
+      if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
+        document.cookie = `authToken=${credential}; path=/; Secure; SameSite=Strict; Max-Age=21600`;
+        return true;
+      }
+    } catch (err) {
+      console.error("Token validation error:", err);
+    }
+    return false;
+  }
+}
+
+// 4. Create an OcrService to handle Tesseract logic (SRP)
+class OcrService {
+  static async performOCR(
+    videoEl: HTMLVideoElement,
+    canvasEl: HTMLCanvasElement
+  ): Promise<string> {
+    const ctx = canvasEl.getContext('2d');
+    if (!ctx || !videoEl.videoWidth || !videoEl.videoHeight) return '';
+
+    canvasEl.width = videoEl.videoWidth;
+    canvasEl.height = videoEl.videoHeight;
+    ctx.drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight);
+
+    try {
+      const dataUrl = canvasEl.toDataURL('image/png');
+      const { data: { text } } = await Tesseract.recognize(dataUrl, 'eng');
+      return text || '';
+    } catch (ocrErr) {
+      console.error("OCR Error:", ocrErr);
+      return '';
+    }
+  }
+}
+
 // Helper function type definitions
 const handleGoogleAuthToken = (credential: string): boolean => {
   try {
@@ -160,7 +240,7 @@ function App(): JSX.Element {
   const responseGoogle = (response: unknown): void => {
     if (response && typeof response === 'object' && 'credential' in response) {
       const { credential } = response as GoogleResponse;
-      if (credential && handleGoogleAuthToken(credential)) {
+      if (credential && AuthService.storeToken(credential)) {
         setIsAuthenticated(true);
       } else {
         console.error("Google login failed:", response);
@@ -231,19 +311,19 @@ function App(): JSX.Element {
 
   const runOCR = async () => {
     if (isWaitingForApi) return;
-    await performOCR(
-      videoRef,
-      canvasRef,
-      isProcessing,
-      setIsProcessing,
-      async (text) => {
-        if (model === 'deepseek') {
-          await askDeepSeek(text, setAnswer, setIsWaitingForApi);
-        } else {
-          await askChatGPT(text, setAnswer, setIsWaitingForApi, model);
-        }
+    const llmService: ILLMService = model === 'deepseek'
+      ? new DeepSeekService()
+      : new ChatGPTService();
+    if (videoRef.current && canvasRef.current) {
+      setIsProcessing(true);
+      try {
+        const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
+        const ans = await llmService.ask(text);
+        if (ans) setAnswer(ans);
+      } finally {
+        setIsProcessing(false);
       }
-    );
+    }
   };
 
   useEffect(() => {
