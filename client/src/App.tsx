@@ -4,6 +4,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import { AuthService } from './services/AuthService';
+import { OcrService } from './services/OcrService';
+import { ILLMService } from './services/ILLMService';
+import { ChatGPTService } from './services/ChatGPTService';
+import { DeepSeekService } from './services/DeepSeekService';
 
 const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
 
@@ -13,86 +18,6 @@ interface GoogleResponse {
 
 interface DecodedToken {
   exp: number;
-}
-
-// 1. Introduce an interface for LLM services (ISP, DIP)
-interface ILLMService {
-  ask(question: string): Promise<string | null>;
-}
-
-// 2. Implement separate classes for each LLM (OCP)
-class ChatGPTService implements ILLMService {
-  async ask(question: string): Promise<string | null> {
-    try {
-      const resp = await fetch('http://localhost:3000/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, model: 'gpt-4o' })
-      });
-      const data = await resp.json();
-      return data.answer || null;
-    } catch (error) {
-      console.error("Error querying ChatGPT:", error);
-      return null;
-    }
-  }
-}
-
-class DeepSeekService implements ILLMService {
-  async ask(question: string): Promise<string | null> {
-    try {
-      const resp = await fetch('http://localhost:3000/api/deepseek', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question })
-      });
-      const data = await resp.json();
-      return data.answer || null;
-    } catch (error) {
-      console.error("Error querying DeepSeek:", error);
-      return null;
-    }
-  }
-}
-
-// 3. Extract token validations into an AuthService (SRP)
-class AuthService {
-  static storeToken(credential: string): boolean {
-    try {
-      const decoded = jwtDecode<DecodedToken>(credential);
-      if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-        document.cookie = `authToken=${credential}; path=/; Secure; SameSite=Strict; Max-Age=21600`;
-        return true;
-      }
-    } catch (err) {
-      console.error("Token validation error:", err);
-    }
-    return false;
-  }
-}
-
-// 4. Create an OcrService to handle Tesseract logic (SRP)
-class OcrService {
-  static async performOCR(
-    videoEl: HTMLVideoElement,
-    canvasEl: HTMLCanvasElement
-  ): Promise<string> {
-    const ctx = canvasEl.getContext('2d');
-    if (!ctx || !videoEl.videoWidth || !videoEl.videoHeight) return '';
-
-    canvasEl.width = videoEl.videoWidth;
-    canvasEl.height = videoEl.videoHeight;
-    ctx.drawImage(videoEl, 0, 0, videoEl.videoWidth, videoEl.videoHeight);
-
-    try {
-      const dataUrl = canvasEl.toDataURL('image/png');
-      const { data: { text } } = await Tesseract.recognize(dataUrl, 'eng');
-      return text || '';
-    } catch (ocrErr) {
-      console.error("OCR Error:", ocrErr);
-      return '';
-    }
-  }
 }
 
 // Helper function type definitions
