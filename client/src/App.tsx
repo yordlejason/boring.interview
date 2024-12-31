@@ -155,7 +155,7 @@ function App(): JSX.Element {
   const [isWaitingForApi, setIsWaitingForApi] = useState(false);
   const [intervalSeconds, setIntervalSeconds] = useState(10);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [model, setModel] = useState('gpt-4o');
+  const [model, setModel] = useState('deepseek');
 
   const responseGoogle = (response: unknown): void => {
     if (response && typeof response === 'object' && 'credential' in response) {
@@ -773,15 +773,15 @@ function App(): JSX.Element {
                   </div>
                 )}
                 <div style={settingsItemStyles}>
-                  <span style={{ ...labelStyles }} data-tooltip="Select a ChatGPT model">Model</span>
+                  <span style={{ ...labelStyles }} data-tooltip="Large Language Models">Model</span>
                   <select
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                     style={dropdownStyles}
                   >
+                    <option value="deepseek">deepseek</option>
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="o1-preview">o1-preview</option>
-                    <option value="deepseek">deepseek</option>
                   </select>
                 </div>
               </div>
