@@ -31,8 +31,10 @@ npm install
 3.	Add environment variables to `.env` file (in `server/`)
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
+DEEPSEEK_API_KEY=your_deepseek_api_key_here
 PORT=3000
 ```
+If you chose to use single API only, you don't have to fill out the other API Key.
 
 4.	Install Frontend Dependencies:
 ```bash
