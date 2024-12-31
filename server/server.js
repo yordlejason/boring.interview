@@ -7,7 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const openai = new OpenAI({apiKey: process.env['OPENAI_API_KEY'],});
+const openai = new OpenAI({ apiKey: process.env['OPENAI_API_KEY'] });
+const deepseek = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: process.env['DEEPSEEK_API_KEY']
+});
+
 const pre_prompt = `
 You are an AI assistant for software engineers. Given an OCR result of a programming question, follow these steps:
 
@@ -84,6 +89,42 @@ app.post('/api/ask', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error fetching answer from ChatGPT." });
+  }
+});
+
+// Add DeepSeek API endpoint
+app.post('/api/deepseek', async (req, res) => {
+  const { question } = req.body;
+  const model = 'deepseek-chat';
+
+  if (!question) {
+    return res.status(400).json({ error: "No question provided." });
+  }
+
+  try {
+    console.log(`[DeepSeek Request] Model: ${model}, question length: ${question.length}`);
+    const content = pre_prompt + question;
+    const response = await deepseek.chat.completions.create({
+      model: model,
+      messages: [{ role: "system", content: content }],
+      max_tokens: 8192
+    });
+
+    const { usage } = response;
+    if (usage) {
+      console.log(`[DeepSeek Response] Model: ${model}, Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
+
+      const promptCost = (usage.prompt_tokens / 1000) * 0.03; // Example cost
+      const completionCost = (usage.completion_tokens / 1000) * 0.06; // Example cost
+      const totalCost = promptCost + completionCost;
+      console.log(`[DeepSeek Cost] Model: ${model}, Prompt: $${promptCost.toFixed(4)}, Completion: $${completionCost.toFixed(4)}, Total: $${totalCost.toFixed(4)}`);
+    }
+
+    const answer = response.choices[0].message.content.trim();
+    res.json({ answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching answer from DeepSeek." });
   }
 });
 
