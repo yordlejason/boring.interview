@@ -12,17 +12,9 @@ boring.interview is designed to solve the coding questions through the integrati
 
 ## Prerequisites
 
-- **Node.js** (LTS recommended, e.g., Node 18 or 20)
+- **Node.js** (LTS recommended, works perfectly well with [v22.7.0](https://nodejs.org/en/blog/release/v22.7.0))
 - **npm** or **yarn** for package management
 - **OpenAI API Key**: Obtain at [OpenAI's Website](https://platform.openai.com/)
-
-## Project Structure
-
-### `.env` file (in `server/`)
-```bash
-OPENAI_API_KEY=your_openai_api_key_here
-PORT=3000
-```
 
 ## Installation
 
@@ -36,7 +28,13 @@ cd server
 npm install
 ```
 
-3.	Install Frontend Dependencies:
+3.	Add environment variables to `.env` file (in `server/`)
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+PORT=3000
+```
+
+4.	Install Frontend Dependencies:
 ```bash
 cd ../client
 npm install
@@ -50,18 +48,18 @@ npm start
 ```
 The server runs at http://localhost:3000.
 
-2.	Start the Client:
+2.	Start the Frontend (Client):
 ```bash
 cd ../client
 npm run dev
 ```
+The client runs at http://localhost:5173.
 
 ## Usage
 1.	Open http://localhost:5173 in your browser.
 2.	Click “Start Screen Capture”. Your browser will prompt you to select a screen or window to share.
-3.	The application will silently capture the screen every 10 seconds, run OCR, and look for a question.
-4.	Otherwise, it sends the question to ChatGPT for an answer.
-5.	The recognized text and the final answer (in Markdown) will be displayed on the page.
+3.	The application will silently capture the screen, run OCR, and solve the question.
+4.	Final answer (in Markdown) will be displayed on the page.
 
 ## Tech Stack
 -	Client: React, Vite, TypeScript
