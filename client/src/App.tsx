@@ -454,7 +454,8 @@ function App(): JSX.Element {
     padding: '15px',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
-    backgroundColor: isDarkMode ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.8)',
+    backgroundColor: isDarkMode ? '#fdfdfd' : '#222',
+    color: isDarkMode ? '#000' : '#fff',
     borderRadius: '8px',
     minWidth: '190px'
   };
@@ -463,11 +464,12 @@ function App(): JSX.Element {
     display: 'flex',
     alignItems: 'center',
     marginBottom: '10px',
-    whiteSpace: 'nowrap' // Prevent line breaks
+    whiteSpace: 'nowrap', // Prevent line breaks
+    color: isDarkMode ? '#000' : '#fff' // Ensure font color matches the container
   };
 
   const labelStyles: React.CSSProperties = {
-    color: textColor,
+    color: isDarkMode ? '#000' : '#fff', // Ensure font color matches the container
     fontSize: '14px',
     userSelect: 'none' as const,
     marginRight: '10px',
