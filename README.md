@@ -43,14 +43,14 @@ npm install
 ```
 
 ## Running the Application
-1.	Start the Backend (Server):
+1.	Start the server:
 ```bash
 cd server
 npm start
 ```
 The server runs at http://localhost:3000.
 
-2.	Start the Frontend (Client):
+2.	Start the client:
 ```bash
 cd ../client
 npm run dev
@@ -58,22 +58,16 @@ npm run dev
 The client runs at http://localhost:5173.
 
 ## Usage
-1.	Open http://localhost:5173 in your browser.
-2.	Click “Start Screen Capture”. Your browser will prompt you to select a screen or window to share.
-3.	The application will silently capture the screen, run OCR, and solve the question.
-4.	Final answer (in Markdown) will be displayed on the page.
+1.	Open http://localhost:5173 in your browser (Chrome works the best).
+3.	Click “Start Screen Capture”. Your browser will prompt you to select a screen or window to share.
+4.	The application will silently capture the screen, run OCR, and solve the question.
+5.	Final answer will be displayed on the page.
 
 ## Tech Stack
 -	Client: React, Vite, TypeScript
 -	OCR: Tesseract.js (no external OCR API needed)
--	ChatGPT Integration: OpenAI Node.js SDK
+-	ChatGPT & DeepSeek Integration: OpenAI Node.js SDK
 -	Markdown Rendering: react-markdown + remark-gfm
-
-## Security & Privacy
-- The screen capture is user-initiated. The user must grant permission each time.
-- OCR and question extraction happen locally (no OCR data is sent to external services if Tesseract.js is used).
-- Questions are sent to the server and then to the OpenAI API for generating answers. Ensure you trust and protect your OpenAI API Key.
-- Consider adding authentication, logging, and encryption if deploying publicly.
 
 ## Troubleshooting
 - `Configuration is not a constructor error`: Ensure you have the latest OpenAI Node.js SDK and a compatible Node.js version.
