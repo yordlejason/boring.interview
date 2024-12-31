@@ -4,6 +4,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
+import { AuthService } from './services/AuthService';
+import { OcrService } from './services/OcrService';
+import { ILLMService } from './services/ILLMService';
+import { ChatGPTService } from './services/ChatGPTService';
+import { DeepSeekService } from './services/DeepSeekService';
 
 const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
 
@@ -160,7 +165,7 @@ function App(): JSX.Element {
   const responseGoogle = (response: unknown): void => {
     if (response && typeof response === 'object' && 'credential' in response) {
       const { credential } = response as GoogleResponse;
-      if (credential && handleGoogleAuthToken(credential)) {
+      if (credential && AuthService.storeToken(credential)) {
         setIsAuthenticated(true);
       } else {
         console.error("Google login failed:", response);
@@ -231,19 +236,19 @@ function App(): JSX.Element {
 
   const runOCR = async () => {
     if (isWaitingForApi) return;
-    await performOCR(
-      videoRef,
-      canvasRef,
-      isProcessing,
-      setIsProcessing,
-      async (text) => {
-        if (model === 'deepseek') {
-          await askDeepSeek(text, setAnswer, setIsWaitingForApi);
-        } else {
-          await askChatGPT(text, setAnswer, setIsWaitingForApi, model);
-        }
+    const llmService: ILLMService = model === 'deepseek'
+      ? new DeepSeekService()
+      : new ChatGPTService();
+    if (videoRef.current && canvasRef.current) {
+      setIsProcessing(true);
+      try {
+        const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
+        const ans = await llmService.ask(text);
+        if (ans) setAnswer(ans);
+      } finally {
+        setIsProcessing(false);
       }
-    );
+    }
   };
 
   useEffect(() => {
