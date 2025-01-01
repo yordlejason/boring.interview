@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import Tesseract from 'tesseract.js';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -19,20 +18,6 @@ interface GoogleResponse {
 interface DecodedToken {
   exp: number;
 }
-
-// Helper function type definitions
-const handleGoogleAuthToken = (credential: string): boolean => {
-  try {
-    const decoded = jwtDecode<DecodedToken>(credential);
-    if (decoded?.exp && decoded.exp * 1000 > Date.now()) {
-      document.cookie = `authToken=${credential}; path=/; Secure; SameSite=Strict; Max-Age=21600`;
-      return true;
-    }
-  } catch (err) {
-    console.error("Token validation error:", err);
-  }
-  return false;
-};
 
 const captureScreen = async (
   setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>,
@@ -55,91 +40,6 @@ const captureScreen = async (
     console.error("Screen capture failed:", err);
   }
 };
-
-// Helper to query ChatGPT
-const askChatGPT = async (
-  question: string,
-  setAnswer: React.Dispatch<React.SetStateAction<string>>,
-  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>,
-  model: string
-): Promise<void> => {
-  setIsWaitingForApi(true);
-  try {
-    const resp = await fetch('http://localhost:3000/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, model })
-    });
-    const data = await resp.json();
-    if (data.answer) {
-      setAnswer(data.answer);
-    } else {
-      console.warn("No answer received from ChatGPT.");
-    }
-  } catch (error) {
-    console.error("Error querying ChatGPT:", error);
-  } finally {
-    setIsWaitingForApi(false);
-  }
-};
-
-// Helper to query DeepSeek API
-const askDeepSeek = async (
-  question: string,
-  setAnswer: React.Dispatch<React.SetStateAction<string>>,
-  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>
-): Promise<void> => {
-  setIsWaitingForApi(true);
-  try {
-    const resp = await fetch('http://localhost:3000/api/deepseek', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question })
-    });
-    const data = await resp.json();
-    if (data.answer) {
-      setAnswer(data.answer);
-    } else {
-      console.warn("No answer received from DeepSeek.");
-    }
-  } catch (error) {
-    console.error("Error querying DeepSeek:", error);
-  } finally {
-    setIsWaitingForApi(false);
-  }
-};
-
-// Move OCR steps into its own function
-const performOCR = async (
-  videoRef: React.RefObject<HTMLVideoElement>,
-  canvasRef: React.RefObject<HTMLCanvasElement>,
-  isProcessing: boolean,
-  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
-  askChatGPTFn: (text: string) => Promise<void>
-): Promise<void> => {
-  if (!videoRef.current || !canvasRef.current || isProcessing) return;
-  const video = videoRef.current;
-  const canvas = canvasRef.current;
-  const ctx = canvas.getContext('2d');
-  if (!ctx || !video.videoWidth || !video.videoHeight) return;
-
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-
-  setIsProcessing(true);
-  try {
-    const dataUrl = canvas.toDataURL('image/png');
-    const { data: { text } } = await Tesseract.recognize(dataUrl, 'eng');
-    if (text) {
-      await askChatGPTFn(text);
-    }
-  } catch (ocrErr) {
-    console.error("OCR Error:", ocrErr);
-  } finally {
-    setIsProcessing(false);
-  }
-}
 
 const getSliderBackground = (value: number): string => {
   const percentage = ((value - 5) / 55) * 100;
