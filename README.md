@@ -13,6 +13,10 @@ I hope you enjoy using this tool! 🙏
 ## Introduction
 boring.interview is designed to assist candidates in mastering LeetCode-style technical interview questions. Whether you're a beginner venturing into coding challenges or a seasoned developer aiming to refine your problem-solving skills, boring.interview provides a structured and supportive environment to boost your preparation. 
 
+## Demo
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/DHIIebi3fws?si=WEMlsEp5RulvoCRU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## How It Works:
 1.	Screen Sharing: Share your screen to capture coding challenges or problems displayed in any application.
 2.	OCR & Text Extraction: The app processes the captured screen to extract relevant text.
