@@ -58,7 +58,7 @@ function App(): JSX.Element {
   const [isAutoMode, setIsAutoMode] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isWaitingForApi, setIsWaitingForApi] = useState(false);
-  const [intervalSeconds, setIntervalSeconds] = useState(10);
+  const [intervalSeconds, setIntervalSeconds] = useState(30);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [model, setModel] = useState('deepseek');
 
