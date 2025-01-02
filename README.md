@@ -1,9 +1,6 @@
 # boring.interview
 
-![License](https://img.shields.io/github/license/yordlejason/boring.interview)
-![Version](https://img.shields.io/github/v/release/yordlejason/boring.interview)
-
-boring.interview is designed to assist candidates in mastering LeetCode-style technical interview questions. Whether you're a beginner venturing into coding challenges or a seasoned developer aiming to refine your problem-solving skills, boring.interview provides a structured and supportive environment to boost your preparation.
+boring.interview is designed to assist candidates in mastering LeetCode-style technical interview questions. Whether you're a beginner venturing into coding challenges or a seasoned developer aiming to refine your problem-solving skills, boring.interview provides a structured and supportive environment to boost your preparation. 
 
 ## How It Works:
 1.	Screen Sharing: Share your screen to capture coding challenges or problems displayed in any application.
