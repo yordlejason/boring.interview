@@ -1,5 +1,7 @@
 # boring.interview
 
+<img alt="gitleaks badge" src="https://img.shields.io/badge/protected%20by-gitleaks-blue">
+
 boring.interview is designed to assist candidates in mastering LeetCode-style technical interview questions. Whether you're a beginner venturing into coding challenges or a seasoned developer aiming to refine your problem-solving skills, boring.interview provides a structured and supportive environment to boost your preparation. 
 
 ## How It Works:
