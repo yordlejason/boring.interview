@@ -2,6 +2,15 @@
 
 <img alt="gitleaks badge" src="https://img.shields.io/badge/protected%20by-gitleaks-blue">
 
+## Good Bye 2024, Hello 2025!
+This is my 2024 end-of-year personal project, created during my vacation in Korea! 🇰🇷
+After noticing many new grads and fellow engineers struggle with LeetCode practice, I built this tool, drawing on my experience as an interviewer.
+This project is designed to help you quickly master the standardized interview format, making it easier to approach and navigate through challenging questions.
+
+If you have any questions, feel free to start a thread in [Discussions](https://github.com/yordlejason/boring.interview/discussions).
+I hope you enjoy using this tool! 🙏 
+
+## Introduction
 boring.interview is designed to assist candidates in mastering LeetCode-style technical interview questions. Whether you're a beginner venturing into coding challenges or a seasoned developer aiming to refine your problem-solving skills, boring.interview provides a structured and supportive environment to boost your preparation. 
 
 ## How It Works:
