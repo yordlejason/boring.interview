@@ -45,87 +45,64 @@ const SUPPORTED_MODELS = {
 };
 
 const COST_PER_1K_PROMPT_TOKENS = {
-  'gpt-4o': 0.03,
-  'o1-preview': 0.001
+  'gpt-4o': 0.0025,
+  'o1-preview': 0.015,
+  'deepseek-chat': 0.00014
 };
 
 const COST_PER_1K_COMPLETION_TOKENS = {
-  'gpt-4o': 0.06,
-  'o1-preview': 0.001
+  'gpt-4o': 0.01,
+  'o1-preview': 0.06,
+  'deepseek-chat': 0.00028
 };
 
-app.post('/api/ask', async (req, res) => {
-  const { question, model = 'gpt-4o' } = req.body;
-  
+function logCostAndUsage(model, usage) {
+  const promptCost = (usage.prompt_tokens / 1000) * COST_PER_1K_PROMPT_TOKENS[model];
+  const completionCost = (usage.completion_tokens / 1000) * COST_PER_1K_COMPLETION_TOKENS[model];
+  const totalCost = promptCost + completionCost;
+  console.log(`[${model} Cost] Prompt: $${promptCost.toFixed(4)}, Completion: $${completionCost.toFixed(4)}, Total: $${totalCost.toFixed(4)}`);
+  console.log(`[${model} Response] Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
+}
+
+async function handleRequest(req, res, aiInstance, model, maxTokens) {
+  const { question } = req.body;
+
   if (!question) {
     return res.status(400).json({ error: "No question provided." });
   }
 
+  try {
+    console.log(`[${model} Request] question length: ${question.length}`);
+    const content = pre_prompt + question;
+    const response = await aiInstance.chat.completions.create({
+      model,
+      messages: [{ role: "user", content: content }],
+      max_tokens: maxTokens
+    });
+
+    const { usage } = response;
+    if (usage) {
+      logCostAndUsage(model, usage);
+    }
+
+    const answer = response.choices[0].message.content.trim();
+    res.json({ answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: `Error fetching answer from ${model}.` });
+  }
+}
+
+app.post('/api/chatgpt', (req, res) => {
+  const { model = 'gpt-4o' } = req.body;
   if (!SUPPORTED_MODELS[model]) {
     return res.status(400).json({ error: "Unsupported model selected." });
   }
-
-  try {
-    console.log(`[OpenAI Request] Model: ${model}, question length: ${question.length}`);
-    const content = pre_prompt + question;
-    const response = await openai.chat.completions.create({
-      model,
-      messages: [{ role: "user", content: content }],
-      max_tokens: SUPPORTED_MODELS[model].max_tokens
-    });
-
-    const { usage } = response;
-    if (usage) {
-      console.log(`[OpenAI Response] Model: ${model}, Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
-
-      const promptCost = (usage.prompt_tokens / 1000) * COST_PER_1K_PROMPT_TOKENS[model];
-      const completionCost = (usage.completion_tokens / 1000) * COST_PER_1K_COMPLETION_TOKENS[model];
-      const totalCost = promptCost + completionCost;
-      console.log(`[OpenAI Cost] Model: ${model}, Prompt: $${promptCost.toFixed(4)}, Completion: $${completionCost.toFixed(4)}, Total: $${totalCost.toFixed(4)}`);
-    }
-
-    const answer = response.choices[0].message.content.trim();
-    res.json({ answer });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error fetching answer from ChatGPT." });
-  }
+  handleRequest(req, res, openai, model, SUPPORTED_MODELS[model].max_tokens);
 });
 
-// Add DeepSeek API endpoint
-app.post('/api/deepseek', async (req, res) => {
-  const { question } = req.body;
-  const model = 'deepseek-chat';
-
-  if (!question) {
-    return res.status(400).json({ error: "No question provided." });
-  }
-
-  try {
-    console.log(`[DeepSeek Request] Model: ${model}, question length: ${question.length}`);
-    const content = pre_prompt + question;
-    const response = await deepseek.chat.completions.create({
-      model: model,
-      messages: [{ role: "system", content: content }],
-      max_tokens: 8192
-    });
-
-    const { usage } = response;
-    if (usage) {
-      console.log(`[DeepSeek Response] Model: ${model}, Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
-
-      const promptCost = (usage.prompt_tokens / 1000) * 0.03; // Example cost
-      const completionCost = (usage.completion_tokens / 1000) * 0.06; // Example cost
-      const totalCost = promptCost + completionCost;
-      console.log(`[DeepSeek Cost] Model: ${model}, Prompt: $${promptCost.toFixed(4)}, Completion: $${completionCost.toFixed(4)}, Total: $${totalCost.toFixed(4)}`);
-    }
-
-    const answer = response.choices[0].message.content.trim();
-    res.json({ answer });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error fetching answer from DeepSeek." });
-  }
+app.post('/api/deepseek', (req, res) => {
+  handleRequest(req, res, deepseek, 'deepseek-chat', 8192);
 });
 
 const port = process.env.PORT || 3000;

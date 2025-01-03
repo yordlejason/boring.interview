@@ -5,41 +5,12 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode';
 import { AuthService } from './services/AuthService';
 import { OcrService } from './services/OcrService';
-import { ILLMService } from './services/ILLMService';
-import { ChatGPTService } from './services/ChatGPTService';
-import { DeepSeekService } from './services/DeepSeekService';
+import { ILLMService } from './controller/ILLMController';
+import { ChatGPTService } from './controller/ChatGPTController';
+import { DeepSeekService } from './controller/DeepSeekController';
+import { DecodedToken } from './types/DecodedToken';
 
 const clientId = "541775409213-uc49bvsrq582uveqoaf501rfoobs1bpg.apps.googleusercontent.com";
-
-interface GoogleResponse {
-  credential: string;
-}
-
-interface DecodedToken {
-  exp: number;
-}
-
-const captureScreen = async (
-  setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>,
-  setAnswer: React.Dispatch<React.SetStateAction<string>>,
-  setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
-  setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>,
-  isAuthenticated: boolean
-): Promise<void> => {
-  if (!isAuthenticated) {
-    alert("Please log in to start screen capture.");
-    return;
-  }
-  try {
-    const media = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    setStream(media);
-    setAnswer('');
-    setIsProcessing(false);
-    setIsWaitingForApi(false);
-  } catch (err) {
-    console.error("Screen capture failed:", err);
-  }
-};
 
 const getSliderBackground = (value: number): string => {
   const percentage = ((value - 5) / 55) * 100;
@@ -63,15 +34,10 @@ function App(): JSX.Element {
   const [model, setModel] = useState('deepseek');
 
   const responseGoogle = (response: unknown): void => {
-    if (response && typeof response === 'object' && 'credential' in response) {
-      const { credential } = response as GoogleResponse;
-      if (credential && AuthService.storeToken(credential)) {
-        setIsAuthenticated(true);
-      } else {
-        console.error("Google login failed:", response);
-      }
+    if (AuthService.handleGoogleResponse(response)) {
+      setIsAuthenticated(true);
     } else {
-      console.error("Invalid response format:", response);
+      console.error("Google login failed:", response);
     }
   };
 
@@ -100,7 +66,7 @@ function App(): JSX.Element {
   }, []);
 
   const handleLogout = () => {
-    document.cookie = "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    AuthService.signOut();
     setIsAuthenticated(false);
     setStream(null);
     setAnswer('');
@@ -131,7 +97,13 @@ function App(): JSX.Element {
   }, [stream]);
 
   const startCapture = async () => {
-    await captureScreen(setStream, setAnswer, setIsProcessing, setIsWaitingForApi, isAuthenticated);
+    await OcrService.captureScreen(
+      setStream,
+      setAnswer,
+      setIsProcessing,
+      setIsWaitingForApi,
+      isAuthenticated
+    );
   };
 
   const runOCR = async () => {
@@ -141,12 +113,14 @@ function App(): JSX.Element {
       : new ChatGPTService();
     if (videoRef.current && canvasRef.current) {
       setIsProcessing(true);
+      setIsWaitingForApi(true); // Set waiting state to true
       try {
         const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
-        const ans = await llmService.ask(text);
+        const ans = await llmService.ask(text, model);
         if (ans) setAnswer(ans);
       } finally {
         setIsProcessing(false);
+        setIsWaitingForApi(false); // Reset waiting state to false
       }
     }
   };
