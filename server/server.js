@@ -56,6 +56,12 @@ const COST_PER_1K_COMPLETION_TOKENS = {
   'deepseek-chat': 0.00028
 };
 
+/**
+ * Logs the cost and usage of the AI model.
+ * 
+ * @param {string} model - The model name.
+ * @param {object} usage - The usage data containing prompt and completion tokens.
+ */
 function logCostAndUsage(model, usage) {
   const promptCost = (usage.prompt_tokens / 1000) * COST_PER_1K_PROMPT_TOKENS[model];
   const completionCost = (usage.completion_tokens / 1000) * COST_PER_1K_COMPLETION_TOKENS[model];
@@ -64,6 +70,15 @@ function logCostAndUsage(model, usage) {
   console.log(`[${model} Response] Prompt: ${usage.prompt_tokens}, Completion: ${usage.completion_tokens}, Total: ${usage.total_tokens}`);
 }
 
+/**
+ * Handles the request to the AI model.
+ * 
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ * @param {object} aiInstance - The AI instance to use for the request.
+ * @param {string} model - The model name.
+ * @param {number} maxTokens - The maximum number of tokens for the response.
+ */
 async function handleRequest(req, res, aiInstance, model, maxTokens) {
   const { question } = req.body;
 
@@ -93,6 +108,12 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
   }
 }
 
+/**
+ * Endpoint for ChatGPT model.
+ * 
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ */
 app.post('/api/chatgpt', (req, res) => {
   const { model = 'gpt-4o' } = req.body;
   if (!SUPPORTED_MODELS[model]) {
@@ -101,6 +122,12 @@ app.post('/api/chatgpt', (req, res) => {
   handleRequest(req, res, openai, model, SUPPORTED_MODELS[model].max_tokens);
 });
 
+/**
+ * Endpoint for DeepSeek model.
+ * 
+ * @param {object} req - The request object.
+ * @param {object} res - The response object.
+ */
 app.post('/api/deepseek', (req, res) => {
   handleRequest(req, res, deepseek, 'deepseek-chat', 8192);
 });
