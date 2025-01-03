@@ -1,3 +1,3 @@
 export interface ILLMService {
-    ask(question: string): Promise<string | null>;
+    ask(question: string, model: string): Promise<string | null>;
 }

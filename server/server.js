@@ -94,7 +94,11 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
 }
 
 app.post('/api/chatgpt', (req, res) => {
-  handleRequest(req, res, openai, 'gpt-4o', SUPPORTED_MODELS['gpt-4o'].max_tokens);
+  const { model = 'gpt-4o' } = req.body;
+  if (!SUPPORTED_MODELS[model]) {
+    return res.status(400).json({ error: "Unsupported model selected." });
+  }
+  handleRequest(req, res, openai, model, SUPPORTED_MODELS[model].max_tokens);
 });
 
 app.post('/api/deepseek', (req, res) => {

@@ -115,7 +115,7 @@ function App(): JSX.Element {
       setIsProcessing(true);
       try {
         const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
-        const ans = await llmService.ask(text);
+        const ans = await llmService.ask(text, model);
         if (ans) setAnswer(ans);
       } finally {
         setIsProcessing(false);
