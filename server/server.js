@@ -54,7 +54,7 @@ const COST_PER_1K_COMPLETION_TOKENS = {
   'o1-preview': 0.001
 };
 
-app.post('/api/ask', async (req, res) => {
+app.post('/api/chatgpt', async (req, res) => {
   const { question, model = 'gpt-4o' } = req.body;
   
   if (!question) {

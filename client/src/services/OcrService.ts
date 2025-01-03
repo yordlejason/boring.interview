@@ -18,4 +18,26 @@ export class OcrService {
       return '';
     }
   }
+
+  public static async captureScreen(
+    setStream: React.Dispatch<React.SetStateAction<MediaStream | null>>,
+    setAnswer: React.Dispatch<React.SetStateAction<string>>,
+    setIsProcessing: React.Dispatch<React.SetStateAction<boolean>>,
+    setIsWaitingForApi: React.Dispatch<React.SetStateAction<boolean>>,
+    isAuthenticated: boolean
+  ): Promise<void> {
+    if (!isAuthenticated) {
+      alert("Please log in to start screen capture.");
+      return;
+    }
+    try {
+      const media = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      setStream(media);
+      setAnswer('');
+      setIsProcessing(false);
+      setIsWaitingForApi(false);
+    } catch (err) {
+      console.error("Screen capture failed:", err);
+    }
+  }
 }

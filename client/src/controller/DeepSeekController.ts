@@ -1,17 +1,17 @@
-import { ILLMService } from './ILLMService';
+import { ILLMService } from './ILLMController';
 
-export class ChatGPTService implements ILLMService {
+export class DeepSeekService implements ILLMService {
   async ask(question: string): Promise<string | null> {
     try {
-      const resp = await fetch('http://localhost:3000/api/ask', {
+      const resp = await fetch('http://localhost:3000/api/deepseek', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, model: 'gpt-4o' })
+        body: JSON.stringify({ question })
       });
       const data = await resp.json();
       return data.answer || null;
     } catch (error) {
-      console.error("Error querying ChatGPT:", error);
+      console.error("Error querying DeepSeek:", error);
       return null;
     }
   }
