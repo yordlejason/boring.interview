@@ -17,6 +17,49 @@ const getSliderBackground = (value: number): string => {
   return `linear-gradient(to right, #4caf50 ${percentage}%, #ffa726 ${percentage}%, #ef5350 100%)`;
 };
 
+/**
+ * The main application component for the boring.interview client.
+ * 
+ * This component handles user authentication, screen capture, OCR processing, 
+ * and interaction with a language model to provide answers based on captured text.
+ * 
+ * @component
+ * 
+ * @returns {JSX.Element} The rendered application component.
+ * 
+ * @example
+ * <App />
+ * 
+ * @remarks
+ * - Uses Google OAuth for authentication.
+ * - Manages dark mode and auto mode settings.
+ * - Captures screen content and processes it using OCR.
+ * - Interacts with a language model to generate answers.
+ * 
+ * @hook
+ * - `useRef` for video, canvas, and settings container references.
+ * - `useState` for managing various states such as authentication, processing, and settings.
+ * - `useEffect` for handling side effects like token verification, local storage, and stream setup.
+ * 
+ * @function
+ * - `responseGoogle` Handles the response from Google OAuth.
+ * - `handleLogout` Logs out the user and resets the state.
+ * - `startCapture` Initiates screen capture.
+ * - `runOCR` Performs OCR on the captured screen content and interacts with the language model.
+ * - `toggleAutoMode` Toggles the auto mode setting.
+ * - `handleManualProcess` Manually triggers the OCR process.
+ * 
+ * @style
+ * - Defines various styles for the component and its elements, including dark mode and light mode styles.
+ * 
+ * @dependencies
+ * - `GoogleOAuthProvider` for Google OAuth integration.
+ * - `ReactMarkdown` for rendering markdown content.
+ * - `remarkGfm` for GitHub Flavored Markdown support.
+ * - `AuthService` for handling authentication.
+ * - `OcrService` for performing OCR.
+ * - `DeepSeekService` and `ChatGPTService` for interacting with language models.
+ */
 function App(): JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);

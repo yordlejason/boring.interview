@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "test/DeepSeekController.test.ts", "test/OcrService.test.ts", "test/AuthService.test.ts"]
 }
