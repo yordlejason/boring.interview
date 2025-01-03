@@ -113,12 +113,14 @@ function App(): JSX.Element {
       : new ChatGPTService();
     if (videoRef.current && canvasRef.current) {
       setIsProcessing(true);
+      setIsWaitingForApi(true); // Set waiting state to true
       try {
         const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
         const ans = await llmService.ask(text, model);
         if (ans) setAnswer(ans);
       } finally {
         setIsProcessing(false);
+        setIsWaitingForApi(false); // Reset waiting state to false
       }
     }
   };
