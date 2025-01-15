@@ -70,7 +70,7 @@ function App(): JSX.Element {
   const [isProcessing, setIsProcessing] = useState(false);
   const [answer, setAnswer] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isAutoMode, setIsAutoMode] = useState(true);
+  const [isAutoMode, setIsAutoMode] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isWaitingForApi, setIsWaitingForApi] = useState(false);
   const [intervalSeconds, setIntervalSeconds] = useState(30);
