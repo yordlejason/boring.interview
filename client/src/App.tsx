@@ -493,6 +493,19 @@ function App(): JSX.Element {
     alignItems: 'center'
   };
 
+  const navButtonStyles = (dark: boolean): React.CSSProperties => ({
+    backgroundColor: dark ? '#fdfdfd' : '#222',
+    color: dark ? '#000' : '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    width: '36px',
+    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'transform 0.2s, background-color 0.3s'
+  });
+
   const toggleAutoMode = () => {
     setIsAutoMode(!isAutoMode);
   };
@@ -755,12 +768,16 @@ function App(): JSX.Element {
 
           {/* Bottom-left container for previous/next buttons */}
           <div style={leftButtonContainer}>
-            <button onClick={handlePrev} disabled={currentSolutionIndex <= 0}>
+            <button onClick={handlePrev}
+              disabled={currentSolutionIndex <= 0}
+              style={navButtonStyles(isDarkMode)}>
               <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
                 <path d="M15.41 7.41L14 6 8 12l6 6 1.41-1.41L10.83 12z" />
               </svg>
             </button>
-            <button onClick={handleNext} disabled={currentSolutionIndex >= solutions.length - 1}>
+            <button onClick={handleNext}
+              disabled={currentSolutionIndex >= solutions.length - 1}
+              style={navButtonStyles(isDarkMode)}>
               <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
                 <path d="M8.59 16.59L13.17 12l-4.58-4.59L10 6l6 6-6 6z" />
               </svg>
