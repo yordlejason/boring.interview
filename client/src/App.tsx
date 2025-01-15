@@ -76,6 +76,8 @@ function App(): JSX.Element {
   const [intervalSeconds, setIntervalSeconds] = useState(30);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [model, setModel] = useState('deepseek');
+  const [solutions, setSolutions] = useState<string[]>([]);
+  const [currentSolutionIndex, setCurrentSolutionIndex] = useState<number>(-1);
 
   const responseGoogle = (response: unknown): void => {
     if (AuthService.handleGoogleResponse(response)) {
@@ -161,7 +163,11 @@ function App(): JSX.Element {
       try {
         const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
         const ans = await llmService.ask(text, model);
-        if (ans) setAnswer(ans);
+        if (ans) {
+          setAnswer(ans);
+          setSolutions(prev => [...prev, ans]);
+          setCurrentSolutionIndex(prev => prev + 1);
+        }
       } finally {
         setIsProcessing(false);
         setIsWaitingForApi(false); // Reset waiting state to false
@@ -478,12 +484,42 @@ function App(): JSX.Element {
     backgroundSize: '12px',
   };
 
+  const leftButtonContainer: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '20px',
+    left: '20px',
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center'
+  };
+
+  const navButtonStyles = (dark: boolean): React.CSSProperties => ({
+    backgroundColor: dark ? '#fdfdfd' : '#222',
+    color: dark ? '#000' : '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    width: '36px',
+    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'transform 0.2s, background-color 0.3s'
+  });
+
   const toggleAutoMode = () => {
     setIsAutoMode(!isAutoMode);
   };
 
   const handleManualProcess = async () => {
     await runOCR();
+  };
+
+  const handlePrev = () => {
+    setCurrentSolutionIndex(i => Math.max(0, i - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentSolutionIndex(i => Math.min(solutions.length - 1, i + 1));
   };
 
   // Determine step states for progress bar colors:
@@ -629,12 +665,12 @@ function App(): JSX.Element {
                 </>
               )}
 
-              {stream && answer && (
+              {stream && currentSolutionIndex >= 0 && (
                 <div style={{ marginTop: '30px' }} ref={solutionRef}>
                   <h2 style={sectionHeadingStyles}>Answer</h2>
                   <div style={answerBoxStyles} className="answer-box">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {answer}
+                      {solutions[currentSolutionIndex]}
                     </ReactMarkdown>
                   </div>
                 </div>
@@ -728,6 +764,24 @@ function App(): JSX.Element {
                 Logout
               </button>
             )}
+          </div>
+
+          {/* Bottom-left container for previous/next buttons */}
+          <div style={leftButtonContainer}>
+            <button onClick={handlePrev}
+              disabled={currentSolutionIndex <= 0}
+              style={navButtonStyles(isDarkMode)}>
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
+                <path d="M15.41 7.41L14 6 8 12l6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </button>
+            <button onClick={handleNext}
+              disabled={currentSolutionIndex >= solutions.length - 1}
+              style={navButtonStyles(isDarkMode)}>
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
+                <path d="M8.59 16.59L13.17 12l-4.58-4.59L10 6l6 6-6 6z" />
+              </svg>
+            </button>
           </div>
         </div>
       </>
