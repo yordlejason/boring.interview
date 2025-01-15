@@ -76,6 +76,8 @@ function App(): JSX.Element {
   const [intervalSeconds, setIntervalSeconds] = useState(30);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [model, setModel] = useState('deepseek');
+  const [solutions, setSolutions] = useState<string[]>([]);
+  const [currentSolutionIndex, setCurrentSolutionIndex] = useState<number>(-1);
 
   const responseGoogle = (response: unknown): void => {
     if (AuthService.handleGoogleResponse(response)) {
@@ -161,7 +163,11 @@ function App(): JSX.Element {
       try {
         const text = await OcrService.performOCR(videoRef.current, canvasRef.current);
         const ans = await llmService.ask(text, model);
-        if (ans) setAnswer(ans);
+        if (ans) {
+          setAnswer(ans);
+          setSolutions(prev => [...prev, ans]);
+          setCurrentSolutionIndex(prev => prev + 1);
+        }
       } finally {
         setIsProcessing(false);
         setIsWaitingForApi(false); // Reset waiting state to false
@@ -486,6 +492,14 @@ function App(): JSX.Element {
     await runOCR();
   };
 
+  const handlePrev = () => {
+    setCurrentSolutionIndex(i => Math.max(0, i - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentSolutionIndex(i => Math.min(solutions.length - 1, i + 1));
+  };
+
   // Determine step states for progress bar colors:
   // Colors: gray (#aaa), blue (#4285f4), green (#4caf50)
   const grayColor = '#aaa';
@@ -629,14 +643,16 @@ function App(): JSX.Element {
                 </>
               )}
 
-              {stream && answer && (
+              {stream && currentSolutionIndex >= 0 && (
                 <div style={{ marginTop: '30px' }} ref={solutionRef}>
                   <h2 style={sectionHeadingStyles}>Answer</h2>
                   <div style={answerBoxStyles} className="answer-box">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {answer}
+                      {solutions[currentSolutionIndex]}
                     </ReactMarkdown>
                   </div>
+                  <button onClick={handlePrev} disabled={currentSolutionIndex <= 0}>Previous</button>
+                  <button onClick={handleNext} disabled={currentSolutionIndex >= solutions.length - 1}>Next</button>
                 </div>
               )}
             </>
