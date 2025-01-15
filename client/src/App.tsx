@@ -484,6 +484,15 @@ function App(): JSX.Element {
     backgroundSize: '12px',
   };
 
+  const leftButtonContainer: React.CSSProperties = {
+    position: 'fixed',
+    bottom: '20px',
+    left: '20px',
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center'
+  };
+
   const toggleAutoMode = () => {
     setIsAutoMode(!isAutoMode);
   };
@@ -651,8 +660,6 @@ function App(): JSX.Element {
                       {solutions[currentSolutionIndex]}
                     </ReactMarkdown>
                   </div>
-                  <button onClick={handlePrev} disabled={currentSolutionIndex <= 0}>Previous</button>
-                  <button onClick={handleNext} disabled={currentSolutionIndex >= solutions.length - 1}>Next</button>
                 </div>
               )}
             </>
@@ -744,6 +751,20 @@ function App(): JSX.Element {
                 Logout
               </button>
             )}
+          </div>
+
+          {/* Bottom-left container for previous/next buttons */}
+          <div style={leftButtonContainer}>
+            <button onClick={handlePrev} disabled={currentSolutionIndex <= 0}>
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
+                <path d="M15.41 7.41L14 6 8 12l6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </button>
+            <button onClick={handleNext} disabled={currentSolutionIndex >= solutions.length - 1}>
+              <svg viewBox="0 0 24 24" fill="currentColor" style={{ width: '24px', height: '24px' }}>
+                <path d="M8.59 16.59L13.17 12l-4.58-4.59L10 6l6 6-6 6z" />
+              </svg>
+            </button>
           </div>
         </div>
       </>
