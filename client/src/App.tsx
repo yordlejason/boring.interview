@@ -64,6 +64,7 @@ function App(): JSX.Element {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const settingsContainerRef = useRef<HTMLDivElement>(null);
+  const solutionRef = useRef<HTMLDivElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -208,6 +209,12 @@ function App(): JSX.Element {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSettingsOpen]);
+
+  useEffect(() => {
+    if (answer && solutionRef.current) {
+      solutionRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [answer]);
 
   const bgColor = isDarkMode ? '#1c1c1c' : '#f9f9f7';
   const textColor = isDarkMode ? '#fdfdfd' : '#222';
@@ -623,7 +630,7 @@ function App(): JSX.Element {
               )}
 
               {stream && answer && (
-                <div style={{ marginTop: '30px' }}>
+                <div style={{ marginTop: '30px' }} ref={solutionRef}>
                   <h2 style={sectionHeadingStyles}>Answer</h2>
                   <div style={answerBoxStyles} className="answer-box">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
