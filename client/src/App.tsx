@@ -75,7 +75,7 @@ function App(): JSX.Element {
   const [isWaitingForApi, setIsWaitingForApi] = useState(false);
   const [intervalSeconds, setIntervalSeconds] = useState(30);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [model, setModel] = useState('deepseek');
+  const [model, setModel] = useState('deepseek-chat');
   const [solutions, setSolutions] = useState<string[]>([]);
   const [currentSolutionIndex, setCurrentSolutionIndex] = useState<number>(-1);
 
@@ -154,7 +154,7 @@ function App(): JSX.Element {
 
   const runOCR = async () => {
     if (isWaitingForApi) return;
-    const llmService: ILLMService = model === 'deepseek'
+    const llmService: ILLMService = model.includes('deepseek')
       ? new DeepSeekService()
       : new ChatGPTService();
     if (videoRef.current && canvasRef.current) {
@@ -746,7 +746,8 @@ function App(): JSX.Element {
                     onChange={(e) => setModel(e.target.value)}
                     style={dropdownStyles}
                   >
-                    <option value="deepseek">deepseek</option>
+                    <option value="deepseek-chat">deepseek-chat</option>
+                    <option value="deepseek-reasoner">deepseek-reasoner</option>
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="o1-preview">o1-preview</option>
                   </select>

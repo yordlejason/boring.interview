@@ -40,20 +40,24 @@ Your solution must:
 - Space Complexity: Big-O notation with an explanation.`
 
 const SUPPORTED_MODELS = {
-  'gpt-4o': { max_tokens: 10000 },
-  'o1-preview': { max_completion_tokens: 10000 },
+  'gpt-4o': { max_tokens: 8192 },
+  'o1-preview': { max_completion_tokens: 8192 },
+  'deepseek-chat': { max_tokens: 8192 },
+  'deepseek-reasoner': { max_tokens: 8192 }
 };
 
 const COST_PER_1K_PROMPT_TOKENS = {
   'gpt-4o': 0.0025,
   'o1-preview': 0.015,
-  'deepseek-chat': 0.00014
+  'deepseek-chat': 0.00014,
+  'deepseek-reasoner': 0.00219
 };
 
 const COST_PER_1K_COMPLETION_TOKENS = {
   'gpt-4o': 0.01,
   'o1-preview': 0.06,
-  'deepseek-chat': 0.00028
+  'deepseek-chat': 0.00028,
+  'deepseek-reasoner': 0.00219
 };
 
 /**
@@ -129,7 +133,11 @@ app.post('/api/chatgpt', (req, res) => {
  * @param {object} res - The response object.
  */
 app.post('/api/deepseek', (req, res) => {
-  handleRequest(req, res, deepseek, 'deepseek-chat', 8192);
+  const { model = 'deepseek-chat' } = req.body;
+  if (!SUPPORTED_MODELS[model]) {
+    return res.status(400).json({ error: "Unsupported model selected." });
+  }
+  handleRequest(req, res, deepseek, model, SUPPORTED_MODELS[model].max_tokens);
 });
 
 const port = process.env.PORT || 3000;
