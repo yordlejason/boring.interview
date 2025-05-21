@@ -32,7 +32,7 @@ Step 3: Solve the Question
 Provide a solution based on Step 2 using Python3 unless another language is explicitly specified.
 
 Your solution must:
-- Include clean, industry-standard code with comments explaining each part.
+- Include clean, industry-standard code with comments explaining each code block, why we wrote it, and how it works.
 - Use clear and meaningful variable and function names.
 - Handle edge cases effectively.
 - Include a section analyzing:
