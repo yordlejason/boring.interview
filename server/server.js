@@ -39,24 +39,18 @@ Your solution must:
 - Space Complexity: Big-O notation with an explanation.`
 
 const SUPPORTED_MODELS = {
-  'gpt-4o': { max_tokens: 8192 },
-  'o1-preview': { max_completion_tokens: 8192 },
-  'deepseek-chat': { max_tokens: 8192 },
-  'deepseek-reasoner': { max_tokens: 8192 }
+  'gpt-4.1': { max_tokens: 8192 },
+  'deepseek-chat': { max_tokens: 8192 }
 };
 
 const COST_PER_1K_PROMPT_TOKENS = {
-  'gpt-4o': 0.0025,
-  'o1-preview': 0.015,
-  'deepseek-chat': 0.00014,
-  'deepseek-reasoner': 0.00219
+  'gpt-4.1': 0.002,
+  'deepseek-chat': 0.00027
 };
 
 const COST_PER_1K_COMPLETION_TOKENS = {
-  'gpt-4o': 0.01,
-  'o1-preview': 0.06,
-  'deepseek-chat': 0.00028,
-  'deepseek-reasoner': 0.00219
+  'gpt-4.1': 0.008,
+  'deepseek-chat': 0.0011
 };
 
 /**
@@ -123,7 +117,7 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
  * @param {object} res - The response object.
  */
 app.post('/api/chatgpt', (req, res) => {
-  const { model = 'gpt-4o' } = req.body;
+  const { model = 'gpt-4.1' } = req.body;
   if (!SUPPORTED_MODELS[model]) {
     return res.status(400).json({ error: "Unsupported model selected." });
   }
