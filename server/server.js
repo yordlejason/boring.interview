@@ -13,51 +13,43 @@ const deepseek = new OpenAI({
   apiKey: process.env['DEEPSEEK_API_KEY']
 });
 
-const pre_prompt = `
-You are an AI assistant for software engineers. Given an OCR result of a programming question, follow these steps:
+const SYSTEM_PROMPT = `You are an AI assistant for software engineers. Given an OCR result of a programming question, follow these steps:
 
-Step 1: Parse the Question
-- Extract and clean the question from the raw OCR result.
-- Ensure the problem statement is complete, grammatically correct, and unambiguous.
+Step 1: Plan the Solution
+Provide the plan for the proposed solution. 
 - Identify key requirements, constraints, and input-output formats from the question. If missing, provide the questions that interviees should ask to interviewers.
 - Provide 3 test cases to validate the solution.
-
-Step 2: Plan the Solution
-Provide the plan for the proposed solution. 
 - How we want to solve.
 - Why we want to solve it that way.
 - What data structures and algorithms we will use.
 
-Step 3: Solve the Question
+Step 2: Solve the Question
 Provide a solution based on Step 2 using Python3 unless another language is explicitly specified.
 
 Your solution must:
-- Include clean, industry-standard code with comments explaining each part.
+- Include clean, industry-standard code with comments explaining each code block, why we wrote it, and how it works.
 - Use clear and meaningful variable and function names.
 - Handle edge cases effectively.
 - Include a section analyzing:
 - Time Complexity: Big-O notation with an explanation.
-- Space Complexity: Big-O notation with an explanation.`
+- Space Complexity: Big-O notation with an explanation.
+
+ENSURE THAT YOUR RESPONSE FOLLOWS THE MARKDOWN FORMAT.
+`
 
 const SUPPORTED_MODELS = {
-  'gpt-4o': { max_tokens: 8192 },
-  'o1-preview': { max_completion_tokens: 8192 },
-  'deepseek-chat': { max_tokens: 8192 },
-  'deepseek-reasoner': { max_tokens: 8192 }
+  'gpt-4.1': { max_tokens: 8192 },
+  'deepseek-chat': { max_tokens: 8192 }
 };
 
 const COST_PER_1K_PROMPT_TOKENS = {
-  'gpt-4o': 0.0025,
-  'o1-preview': 0.015,
-  'deepseek-chat': 0.00014,
-  'deepseek-reasoner': 0.00219
+  'gpt-4.1': 0.002,
+  'deepseek-chat': 0.00027
 };
 
 const COST_PER_1K_COMPLETION_TOKENS = {
-  'gpt-4o': 0.01,
-  'o1-preview': 0.06,
-  'deepseek-chat': 0.00028,
-  'deepseek-reasoner': 0.00219
+  'gpt-4.1': 0.008,
+  'deepseek-chat': 0.0011
 };
 
 /**
@@ -92,10 +84,15 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
 
   try {
     console.log(`[${model} Request] question length: ${question.length}`);
-    const content = pre_prompt + question;
+    
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: question }
+    ];
+    
     const response = await aiInstance.chat.completions.create({
       model,
-      messages: [{ role: "user", content: content }],
+      messages,
       max_tokens: maxTokens
     });
 
@@ -119,7 +116,7 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
  * @param {object} res - The response object.
  */
 app.post('/api/chatgpt', (req, res) => {
-  const { model = 'gpt-4o' } = req.body;
+  const { model = 'gpt-4.1' } = req.body;
   if (!SUPPORTED_MODELS[model]) {
     return res.status(400).json({ error: "Unsupported model selected." });
   }

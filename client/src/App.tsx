@@ -534,11 +534,11 @@ function App(): JSX.Element {
 
   // Step 2 logic:
   // If isProcessing => in progress (blue),
-  // else if stream is available and not processing => completed (green),
+  // else if stream is available and OCR has completed (either we have an answer, we're waiting for API, or we've processed at least once) => completed (green),
   // else => gray
   let step2Color = grayColor;
   if (stream && isProcessing) step2Color = blueColor;
-  else if (stream && !isProcessing && (answer || !isWaitingForApi)) step2Color = greenColor;
+  else if (stream && !isProcessing && (answer || isWaitingForApi)) step2Color = greenColor;
 
   // Step 3 logic:
   // If waitingForApi => blue (in progress)
@@ -747,9 +747,7 @@ function App(): JSX.Element {
                     style={dropdownStyles}
                   >
                     <option value="deepseek-chat">deepseek-chat</option>
-                    <option value="deepseek-reasoner">deepseek-reasoner</option>
-                    <option value="gpt-4o">gpt-4o</option>
-                    <option value="o1-preview">o1-preview</option>
+                    <option value="gpt-4.1">gpt-4.1</option>
                   </select>
                 </div>
               </div>
