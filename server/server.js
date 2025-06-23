@@ -13,8 +13,7 @@ const deepseek = new OpenAI({
   apiKey: process.env['DEEPSEEK_API_KEY']
 });
 
-const pre_prompt = `
-You are an AI assistant for software engineers. Given an OCR result of a programming question, follow these steps:
+const SYSTEM_PROMPT = `You are an AI assistant for software engineers. Given an OCR result of a programming question, follow these steps:
 
 Step 1: Parse the Question
 - Extract and clean the question from the raw OCR result.
@@ -92,10 +91,15 @@ async function handleRequest(req, res, aiInstance, model, maxTokens) {
 
   try {
     console.log(`[${model} Request] question length: ${question.length}`);
-    const content = pre_prompt + question;
+    
+    const messages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: question }
+    ];
+    
     const response = await aiInstance.chat.completions.create({
       model,
-      messages: [{ role: "user", content: content }],
+      messages,
       max_tokens: maxTokens
     });
 
